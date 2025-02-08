@@ -13,7 +13,7 @@ namespace FarmAd.Application.DTOs.User
         public ServiceType ServiceType { get; set; }
         public int DurationServicesId { get; set; }
         public string AppUserId { get; set; }
-        public int PosterId { get; set; }
+        public int ProductId { get; set; }
         public ProductStatus ProductStatus { get; set; }
     }
     public class PaymentCreateDtoValidator : AbstractValidator<PaymentCreateDto>

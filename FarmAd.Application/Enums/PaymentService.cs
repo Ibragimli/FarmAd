@@ -8,7 +8,7 @@ namespace FarmAd.Infrastructure.Enums
 {
     public enum PaymentService
     {
-        PosterPayment = 1,
+        ProductPayment = 1,
         BalancePayment = 2,
     }
 }

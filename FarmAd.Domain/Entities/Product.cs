@@ -11,7 +11,7 @@ namespace FarmAd.Domain.Entities
 {
     public class Product : BaseEntity
     {
-        public int PosterFeaturesId { get; set; }
+        public int ProductFeatureId { get; set; }
         public ProductFeature ProductFeatures { get; set; }
         public ICollection<ProductUserId> ProductUserIds { get; set; }
         public ICollection<WishItem> WishItems { get; set; }

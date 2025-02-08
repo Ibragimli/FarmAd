@@ -6,6 +6,6 @@ namespace FarmAd.Application.DTOs.User
 {
     public class CookieWishItemDto
     {
-        public int PosterId { get; set; }
+        public int ProductId { get; set; }
     }
 }

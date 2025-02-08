@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Infrastructure.Service;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,7 @@ namespace FarmAd.Infrastructure
     {
         public static void AddInfrastructureServices(this IServiceCollection services)
         {
+            services.AddScoped<IImageManagerService, ImageManagerService>();
 
         }
     }

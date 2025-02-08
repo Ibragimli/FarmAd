@@ -15,8 +15,4 @@
     <ProjectReference Include="..\FarmAd.Application\FarmAd.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Service\" />
-  </ItemGroup>
-
 </Project>

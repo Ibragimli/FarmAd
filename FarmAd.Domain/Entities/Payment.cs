@@ -19,7 +19,7 @@ namespace FarmAd.Domain.Entities
         public decimal? Amount { get; set; }
         public int? Duration { get; set; }
         public string AppUserId { get; set; }
-        public int? PosterId { get; set; }
+        public int? ProductId { get; set; }
         public AppUser AppUser { get; set; }
         public Product Product { get; set; }
     }

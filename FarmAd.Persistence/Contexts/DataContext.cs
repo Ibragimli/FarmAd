@@ -35,47 +35,43 @@ namespace FarmAd.Persistence.Contexts
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //builder.Entity<SubCategory>()
-            //    .HasKey(x => new { x.CategoryId });
+            builder.Entity<ProductUserId>()
+      .HasKey(x => new { x.ProductId, x.AppUserId });
 
-            //builder.Entity<Poster>()
-            //   .HasKey(x => new { x.PosterFeaturesId });
+            builder.Entity<ProductUserId>()
+                .HasOne(x => x.AppUser)
+                .WithMany(x => x.ProductUserIds)
+                .HasForeignKey(x => x.AppUserId);
 
-            //builder.Entity<PosterUserId>()
-            //    .HasKey(x => new { x.PosterId, x.AppUserId });
+            builder.Entity<ProductUserId>()
+                .HasOne(x => x.Product)
+                .WithMany(x => x.ProductUserIds)
+                .HasForeignKey(x => x.ProductId);
 
-            //builder.Entity<PosterUserId>()
-            //    .HasOne(x => x.AppUser)
-            //    .WithMany(x => x.PosterUserIds)
-            //    .HasForeignKey(x => x.AppUserId);
+            builder.Entity<WishItem>()
+                .HasKey(x => new { x.AppUserId, x.ProductId });
 
-            //builder.Entity<PosterUserId>()
-            //           .HasOne(x => x.Poster)
-            //           .WithMany(x => x.PosterUserIds)
-            //           .HasForeignKey(x => x.PosterId);
+            builder.Entity<WishItem>()
+                .HasOne(x => x.AppUser)
+                .WithMany(x => x.WishItems)
+                .HasForeignKey(x => x.AppUserId);
 
-            //builder.Entity<WishItem>()
-            //    .HasKey(x => new { x.AppUserId, x.PosterId });
+            builder.Entity<WishItem>()
+                .HasOne(x => x.Product)
+                .WithMany(x => x.WishItems)
+                .HasForeignKey(x => x.ProductId);
 
-            //builder.Entity<WishItem>()
-            //         .HasOne(x => x.AppUser)
-            //         .WithMany(x => x.WishItems)
-            //         .HasForeignKey(x => x.AppUserId);
+            builder.Entity<ProductImage>()
+                .HasKey(x => new { x.ProductId });
 
-            //builder.Entity<WishItem>()
-            //           .HasOne(x => x.Poster)
-            //           .WithMany(x => x.WishItems)
-            //           .HasForeignKey(x => x.PosterId);
+            builder.Entity<Payment>()
+                .HasKey(x => new { x.AppUserId, x.ProductId });
 
+            builder.Entity<ProductFeature>()
+                .HasKey(x => new { x.CityId, x.SubCategoryId });
 
-            //builder.Entity<PosterImage>()
-            //    .HasKey(x => new { x.PosterId });
-
-            //builder.Entity<Payment>()
-            //    .HasKey(x => new { x.AppUserId, x.PosterId });
-
-            //builder.Entity<PosterFeatures>()
-            //    .HasKey(x => new { x.CityId, x.SubCategoryId });
+            // Apply all configurations automatically from the assembly
+            builder.ApplyConfigurationsFromAssembly(typeof(CategoryConfiguration).Assembly);
 
 
             builder.ApplyConfigurationsFromAssembly(typeof(CategoryConfiguration).Assembly);

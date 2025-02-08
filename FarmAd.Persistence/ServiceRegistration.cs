@@ -87,16 +87,14 @@ namespace FarmAd.Persistence
 
 
             // Identity Konfigürasyonu
-            services.AddIdentity<AppUser, AppRole>(options =>
+            services.AddIdentity<AppUser, IdentityRole>(opt =>
             {
-                options.Password.RequireDigit = false; // Örnek yapılandırma
-                options.Password.RequiredLength = 2;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-            })
-            .AddEntityFrameworkStores<DataContext>()
-            .AddDefaultTokenProviders();
-
+                opt.Password.RequiredUniqueChars = 0;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.User.RequireUniqueEmail = false;
+            }).AddDefaultTokenProviders().AddEntityFrameworkStores<DataContext>();
 
         }
     }

@@ -6,7 +6,7 @@ namespace FarmAd.Application.DTOs.User
 {
     public class SearchDto
     {
-        public string PosterName { get; set; } = null;
+        public string ProductName { get; set; } = null;
         public int? CategoryId { get; set; } = null;
         public int? SubCategoryId { get; set; } = null;
         public int? CityId { get; set; } = null;
