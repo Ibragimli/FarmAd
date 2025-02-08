@@ -1,5 +1,6 @@
 ﻿using FarmAd.Domain.Entities.Common;
 using FarmAd.Domain.Entities.Identity;
+using FarmAd.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,9 @@ namespace FarmAd.Domain.Entities
 {
     public class Payment : BaseEntity
     {
-        //public PaymentService Service { get; set; }
-        //public Source Source { get; set; }
-        //public ServiceType ServiceType { get; set; }
+        public PaymentService Service { get; set; }
+        public Source Source { get; set; }
+        public ServiceType ServiceType { get; set; }
         public decimal? Amount { get; set; }
         public int? Duration { get; set; }
         public string AppUserId { get; set; }

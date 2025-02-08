@@ -19,4 +19,10 @@
     <ProjectReference Include="..\FarmAd.Domain\FarmAd.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Commands\" />
+    <Folder Include="Features\Queries\" />
+    <Folder Include="Abstractions\" />
+  </ItemGroup>
+
 </Project>

@@ -20,12 +20,28 @@ namespace FarmAd.Persistence.Repositories
         }
         public DbSet<T> Table => _context.Set<T>();
 
+
         public IQueryable<T> GetAll(bool tracking = true)
         {
             var query = Table.AsQueryable();
             if (!tracking)
                 query = query.AsNoTracking();
             return query;
+        }
+        public IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true)
+        {
+            var query = Table.Skip(pageIndex * pageSize).Take(pageSize).AsQueryable();
+            if (!tracking)
+                query = query.AsNoTracking();
+            return query;
+        }
+
+        public async Task<int> GetTotalCountAsync(Expression<Func<T, bool>> method, bool tracking = true)
+        {
+            var query = Table.AsQueryable();
+            if (!tracking)
+                query = query.AsNoTracking();
+            return await query.CountAsync();
         }
 
         public async Task<bool> IsExistAsync(int id, bool tracking = true)
@@ -64,9 +80,6 @@ namespace FarmAd.Persistence.Repositories
             return query;
         }
 
-        public IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

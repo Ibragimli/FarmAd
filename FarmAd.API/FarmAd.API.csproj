@@ -26,4 +26,8 @@
     <ProjectReference Include="..\FarmAd.Persistence\FarmAd.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

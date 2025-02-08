@@ -1,4 +1,5 @@
 ﻿using FarmAd.Domain.Entities.Common;
+using FarmAd.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,6 @@ namespace FarmAd.Domain.Entities
 {
     public class ProductFeature : BaseEntity
     {
-        //public ProductStatus ProductStatus { get; set; }
         public string Name { get; set; }
         public string Describe { get; set; }
         public string Email { get; set; }
@@ -23,6 +23,8 @@ namespace FarmAd.Domain.Entities
         public bool IsNew { get; set; }
         public bool IsShipping { get; set; }
         public bool IsPremium { get; set; }
+        public ProductStatus ProductStatus { get; set; }
+
         public DateTime ExpirationDateVip { get; set; }
         public DateTime ExpirationDatePremium { get; set; }
         public DateTime ExpirationDateDisabled { get; set; } = DateTime.UtcNow.AddHours(4).AddDays(90);
