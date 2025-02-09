@@ -13,6 +13,7 @@ using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Application.Repositories.UserTerm;
 using FarmAd.Application.Repositories.WishItem;
 using FarmAd.Domain.Entities.Identity;
+using FarmAd.Infrastructure.Service.User;
 using FarmAd.Persistence.Contexts;
 using FarmAd.Persistence.Repositories.Category;
 using FarmAd.Persistence.Repositories.City;
@@ -45,7 +46,6 @@ namespace FarmAd.Persistence
         {
 
             //services.AddScoped<IProductService, ProductService>();
-            //services.AddScoped<IUserService, UserService>();
             //services.AddScoped<IAuthService, AuthService>();
             //services.AddScoped<IRoleService, RoleService>();
             //services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();
@@ -53,7 +53,7 @@ namespace FarmAd.Persistence
             //services.AddScoped<IEndpointWriteRepository, EndpointWriteRepository>();
             //services.AddScoped<IEndpointReadRepository, EndpointReadRepository>();
             //services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
-
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICategoryReadRepository, CategoryReadRepository>();
             services.AddScoped<ICategoryWriteRepository, CategoryWriteRepository>();
             services.AddScoped<IProductWriteRepository, ProductWriteRepository>();

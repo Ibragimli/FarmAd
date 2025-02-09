@@ -42,15 +42,15 @@ namespace FarmAd.Infrastructure.Service
                 : throw new Exception($"Yanlış format: {key}");
         }
 
-        public void ValidateProduct(IFormFile posterImageFile)
+        public void ValidateProduct(IFormFile ProductImageFile)
         {
             string[] allowedTypes = { GetValue("ImageType1"), GetValue("ImageType2") };
             int maxSize = GetValueInt("ImageSize") * 1048576; // MB -> Byte dönüşümü
 
-            if (!allowedTypes.Contains(posterImageFile.ContentType))
+            if (!allowedTypes.Contains(ProductImageFile.ContentType))
                 throw new ImageFormatException("Şəkil yalnız (png və ya jpg) formatında ola bilər");
 
-            if (posterImageFile.Length > maxSize)
+            if (ProductImageFile.Length > maxSize)
                 throw new ImageFormatException($"Şəkilin maksimum yaddaşı {GetValueInt("ImageSize")}MB ola bilər!");
         }
 

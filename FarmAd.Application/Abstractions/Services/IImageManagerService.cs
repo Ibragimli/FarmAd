@@ -16,7 +16,7 @@ namespace FarmAd.Application.Abstractions.Services
     {
         public string GetValue(string key);
         public int GetValueInt(string key);
-        public void ValidateProduct(IFormFile PosterImageFile);
+        public void ValidateProduct(IFormFile ProductImageFile);
         public void ValidateImages(List<IFormFile> Images);
         public string FileSave(IFormFile Image, string folderName);
         public void DeleteFile(string image, string folderName);

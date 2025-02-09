@@ -10,13 +10,20 @@ namespace FarmAd.Application.Repositories
 {
     public interface IReadRepository<T> : IRepository<T> where T : BaseEntity
     {
-        IQueryable<T> GetAll(bool tracking = true);
-        IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true);
-        IQueryable<T> GetWhere(Expression<Func<T, bool>> method, bool tracking = true);
-        Task<int> GetTotalCountAsync(Expression<Func<T, bool>> method, bool tracking = true);
-        Task<T> GetSingleAsync(Expression<Func<T, bool>> method, bool tracking = true);
-        Task<T> GetByIdAsync(int id, bool tracking = true);
-        Task<bool> IsExistAsync(int id, bool tracking = true);
+        Task<T> GetAsync(Expression<Func<T, bool>> method, params string[] includes);
+        IQueryable<T> GetAll(bool tracking = true, params string[] includes);
+        //public Task<List<T>> GetAllAsync(bool tracking = true);
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
+        IQueryable<T> AsQueryable(params string[] includes);
+
+        IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true, params string[] includes);
+        IQueryable<T> GetWhere(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
+        Task<int> GetTotalCountAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
+        Task<T> GetSingleAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
+        Task<T> GetByIdAsync(int id, bool tracking = true, params string[] includes);
+        Task<bool> IsExistAsync(int id, bool tracking = true, params string[] includes);
+        Task<bool> IsExistAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
+
 
     }
 }
