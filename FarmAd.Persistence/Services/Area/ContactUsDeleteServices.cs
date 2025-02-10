@@ -1,13 +1,13 @@
 ﻿
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.Repositories.ContactUs;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class ContactUsDeleteServices : IContactUsDeleteServices
     {

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Persistence.Contexts;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class LayoutServices : ILayoutServices
     {

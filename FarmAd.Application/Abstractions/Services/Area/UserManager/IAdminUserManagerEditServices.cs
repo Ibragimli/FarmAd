@@ -8,13 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Domain.Entities.Identity;
 
-namespace Ferma.Service.Services.Interfaces.Area.UserManagers
+namespace FarmAd.Application.Abstractions.Services.Area.UserManagers
 {
     public interface IAdminUserManagerEditServices
     {
         public Task<AppUser> GetUserManager(string Id);
         public Task EditUserManager(UserManagerEditDto UserManagerEditDto);
-        public Task<string> RoleName(string id);
+        //public Task<string> RoleName(string id);
 
     }
 }

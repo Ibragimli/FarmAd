@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Application.Repositories.UserTerm;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class UserTermIndexServices : IUserTermIndexServices
     {

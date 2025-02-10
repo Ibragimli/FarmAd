@@ -1,7 +1,7 @@
 ﻿using FarmAd.Application.Repositories.ContactUs;
 using FarmAd.Domain.Entities;
 
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class ContactUsIndexServices : IContactUsIndexServices
     {

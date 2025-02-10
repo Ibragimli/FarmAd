@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using FarmAd.Application.Repositories.Product;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProductSearchServices : IProductSearchServices
     {

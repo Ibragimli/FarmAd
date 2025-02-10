@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using FarmAd.Application.Abstractions.Services.User;
 using FarmAd.Application.Repositories.UserAuthentication;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class AuthenticationServices : IAuthenticationServices
     {

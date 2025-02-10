@@ -12,7 +12,7 @@ using FarmAd.Application.Repositories.SubCategory;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using FarmAd.Application.Repositories.City;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProductCreateValueCheckServices : IProductCreateValueCheckServices
     {

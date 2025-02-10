@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Application.Repositories.UserAuthentication;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProfileLoginServices : IProfileLoginServices
     {

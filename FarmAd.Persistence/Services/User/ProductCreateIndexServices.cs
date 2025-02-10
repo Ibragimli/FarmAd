@@ -11,7 +11,7 @@ using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.City;
 using FarmAd.Application.Repositories.SubCategory;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
 
     public class ProductCreateIndexServices : IProductCreateIndexServices

@@ -11,7 +11,7 @@ using FarmAd.Domain.Entities.Identity;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.Payment;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProfileIndexServices : IProfileIndexServices
     {

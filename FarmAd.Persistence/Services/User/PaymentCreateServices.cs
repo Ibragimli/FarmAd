@@ -14,7 +14,7 @@ using FarmAd.Infrastructure.Service.User;
 using FarmAd.Application.Repositories.ServiceDuration;
 using FarmAd.Application.Repositories.Payment;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class PaymentCreateServices : IPaymentCreateServices
     {
@@ -72,7 +72,7 @@ namespace Ferma.Service.Services.Implementations.User
             {
                 throw new PaymentValueException("Balansınızda kifayət qədər məbləğ yoxdur!");
             }
-            var Product = await _productReadRepository.GetByIdAsync(paymentCreateDto.ProductId, true, "ProductFeature");
+            var Product = await _productReadRepository.GetByIdAsync(paymentCreateDto.ProductId, true, "ProductFeatures");
 
             Payment payment = new Payment
             {
@@ -104,7 +104,7 @@ namespace Ferma.Service.Services.Implementations.User
         {
             var duration = await _serviceDurationReadRepository.GetByIdAsync(paymentCreateDto.DurationServicesId);
 
-            var Product = await _productReadRepository.GetByIdAsync(paymentCreateDto.ProductId, true, "ProductFeature");
+            var Product = await _productReadRepository.GetByIdAsync(paymentCreateDto.ProductId, true, "ProductFeatures");
             Payment payment = new Payment
             {
                 Duration = duration.Duration,

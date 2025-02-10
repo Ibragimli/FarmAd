@@ -14,7 +14,7 @@ using FarmAd.Persistence.Repositories.Product;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.ProductImage;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProductEditServices : IProductEditServices
     {

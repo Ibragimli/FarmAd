@@ -1,4 +1,4 @@
-﻿using Ferma.Service.Services.Interfaces;
+﻿using FarmAd.Application.Abstractions.Services;
 using MimeKit;
 using MailKit.Net.Smtp;
 using System;
@@ -7,7 +7,7 @@ using System.Text;
 using MailKit.Security;
 using MimeKit.Text;
 
-namespace Ferma.Service.Services.Implementations
+namespace FarmAd.Persistence.Service
 {
     public class EmailServices : IEmailServices
     {

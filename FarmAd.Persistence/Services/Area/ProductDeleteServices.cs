@@ -1,7 +1,7 @@
 ﻿using FarmAd.Domain.Entities;
 
 using FarmAd.Application.Exceptions;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,7 +13,7 @@ using FarmAd.Application.Repositories.Payment;
 using FarmAd.Application.Repositories.WishItem;
 using FarmAd.Application.Repositories.ProductFeature;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class ProductDeleteServices : IProductDeleteServices
     {

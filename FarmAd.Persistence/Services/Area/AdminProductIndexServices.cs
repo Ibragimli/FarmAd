@@ -1,7 +1,7 @@
 ﻿using FarmAd.Domain.Entities;
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.DTOs.User;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.SubCategory;
 using FarmAd.Application.Repositories.Category;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class AdminProductIndexServices : IAdminProductIndexServices
     {
@@ -32,10 +32,10 @@ namespace Ferma.Service.Services.Implementations.Area
         public async Task IsDisabled()
         {
             var now = DateTime.UtcNow.AddHours(4);
-            var ValidateProduct = await _productReadRepository.IsExistAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeature");
+            var ValidateProduct = await _productReadRepository.IsExistAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeatures");
             if (ValidateProduct)
             {
-                var Products = await _productReadRepository.GetAllAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeature");
+                var Products = await _productReadRepository.GetAllAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeatures");
                 foreach (var Product in Products)
                 {
                     Product.ProductFeatures.ProductStatus = ProductStatus.Disabled;

@@ -2,14 +2,14 @@
 using FarmAd.Domain.Entities;
 using FarmAd.Domain.Enums;
 
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class ProductPaymentIndexServices : IProductPaymentIndexServices
     {

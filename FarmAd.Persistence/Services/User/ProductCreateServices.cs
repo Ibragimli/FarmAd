@@ -2,7 +2,7 @@
 using FarmAd.Domain.Enums;
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.DTOs.User;
-using Ferma.Service.Services.Interfaces;
+using FarmAd.Application.Abstractions.Services;
 using FarmAd.Application.Abstractions.Services.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -23,7 +23,7 @@ using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Infrastructure.Service.User;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
 
     public class ProductCreateServices : IProductCreateServices

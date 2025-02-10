@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ferma.Service.Services.Interfaces.Area.UserManagers
+namespace FarmAd.Application.Abstractions.Services.Area.UserManagers
 {
     public interface IAdminUserManagerCreateServices
     {

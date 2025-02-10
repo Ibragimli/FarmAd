@@ -2,7 +2,7 @@
 
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.DTOs.Area;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class AdminLoginServices : IAdminLoginServices
     {

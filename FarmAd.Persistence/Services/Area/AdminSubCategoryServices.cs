@@ -1,7 +1,7 @@
 ﻿using FarmAd.Domain.Entities;
 
 using FarmAd.Application.Exceptions;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using FarmAd.Application.Repositories.SubCategory;
 using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.ProductFeature;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class AdminSubCategoryServices : IAdminSubCategoryServices
     {

@@ -1,4 +1,4 @@
-﻿namespace Ferma.Service.Services.Implementations
+﻿namespace FarmAd.Persistence.Service
 {
     internal class DataContext
     {

@@ -12,7 +12,7 @@ using FarmAd.Application.Repositories.WishItem;
 using Microsoft.Extensions.DependencyInjection;
 using FarmAd.Application.Repositories.ServiceDuration;
 
-namespace Ferma.Service.Services.Implementations.User
+namespace FarmAd.Persistence.Service.User
 {
     public class ProductDetailIndexServices : IProductDetailIndexServices
     {

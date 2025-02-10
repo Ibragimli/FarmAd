@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ferma.Service.Services.Interfaces
+namespace FarmAd.Application.Abstractions.Services
 {
     public interface IEmailServices
     {

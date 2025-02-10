@@ -1,7 +1,7 @@
 ﻿
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.DTOs.Area;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using FarmAd.Application.Abstractions.Services;
 using FarmAd.Application.Repositories.Setting;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class SettingEditServices : ISettingEditServices
     {

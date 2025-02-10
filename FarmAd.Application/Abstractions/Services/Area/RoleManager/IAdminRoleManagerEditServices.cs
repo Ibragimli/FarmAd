@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ferma.Service.Services.Interfaces.Area.RoleManagers
+namespace FarmAd.Application.Abstractions.Services.Area.RoleManagers
 {
     public interface IAdminRoleManagerEditServices
     {

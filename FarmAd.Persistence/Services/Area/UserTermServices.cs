@@ -1,7 +1,7 @@
 ﻿using FarmAd.Domain.Entities;
 
 using FarmAd.Application.Exceptions;
-using Ferma.Service.Services.Interfaces.Area;
+using FarmAd.Application.Abstractions.Services.Area;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Application.Repositories.UserTerm;
 
-namespace Ferma.Service.Services.Implementations.Area
+namespace FarmAd.Persistence.Service.Area
 {
     public class AdminUserTermServices : IAdminUserTermServices
     {
