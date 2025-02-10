@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\Storage\" />
-    <Folder Include="Features\Commands\" />
-    <Folder Include="Features\Queries\" />
   </ItemGroup>
 
 </Project>

@@ -8,8 +8,8 @@ namespace FarmAd.Application.Abstractions.Services.User
 {
     public interface ILayoutServices
     {
-        public Task<List<Setting>> GetSettingsAsync();
-        public Task<List<City>> GetAllCitiesSearch();
+        public Task<IEnumerable<Setting>> GetSettingsAsync();
+        public Task<IEnumerable<City>> GetAllCitiesSearch();
 
     }
 }

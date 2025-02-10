@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Infrastructure.Enums
+namespace FarmAd.Application.Enums
 {
-    public enum PaymentService
+    public enum ActionType
     {
-        ProductPayment = 1,
-        BalancePayment = 2,
+        Reading,
+        Writing,
+        Updating,
+        Deleting
     }
 }

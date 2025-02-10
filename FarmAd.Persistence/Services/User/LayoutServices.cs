@@ -6,35 +6,32 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Persistence.Contexts;
+using FarmAd.Application.Repositories.Setting;
+using FarmAd.Application.Repositories.City;
 
 namespace FarmAd.Persistence.Service.User
 {
     public class LayoutServices : ILayoutServices
     {
+        private readonly ISettingReadRepository _settingReadRepository;
+        private readonly ICityReadRepository _cityReadRepository;
 
-        public Task<List<City>> GetAllCitiesSearch()
+        public LayoutServices(ISettingReadRepository settingReadRepository, ICityReadRepository cityReadRepository)
         {
-            throw new NotImplementedException();
+            _settingReadRepository = settingReadRepository;
+            _cityReadRepository = cityReadRepository;
         }
-
-        public Task<List<Setting>> GetSettingsAsync()
+        public async Task<IEnumerable<Setting>> GetSettingsAsync()
         {
-            throw new NotImplementedException();
+            var settings = await _settingReadRepository.GetAllAsync(x => !x.IsDelete);
+            return settings;
         }
-        //private readonly DataContext _context;
+        public async Task<IEnumerable<City>> GetAllCitiesSearch()
+        {
+            var cities = await _cityReadRepository.GetAllAsync(x => !x.IsDelete);
 
-        //public LayoutServices(DataContext context)
-        //{
-        //    _context = context;
-        //}
-        //public async Task<List<Setting>> GetSettingsAsync()
-        //{
-        //    return await _context.Settings.ToListAsync();
-        //}
-        //public async Task<List<City>> GetAllCitiesSearch()
-        //{
-        //    return await _context.Cities.ToListAsync();
-        //}
+            return cities;
+        }
 
     }
 }

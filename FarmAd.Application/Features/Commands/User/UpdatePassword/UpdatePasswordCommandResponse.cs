@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Infrastructure.Enums
+namespace FarmAd.Application.Features.Commands.User.UpdatePassword
 {
-    public enum Source
+    public class UpdatePasswordCommandResponse
     {
-        BankCard = 1,
-        Balance = 2,
     }
 }

@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-namespace FarmAd.Infrastructure.Enums
+namespace FarmAd.Application.Features.Commands.User.AssignRoleToUser
 {
-    public enum ServiceType
+    public class AssignRoleToUserResponse
     {
-        Vip = 1,
-        Premium = 2,
     }
 }
