@@ -9,7 +9,7 @@ using FarmAd.Persistence.Contexts;
 using FarmAd.Application.Repositories.Setting;
 using FarmAd.Application.Repositories.City;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services
 {
     public class LayoutServices : ILayoutServices
     {

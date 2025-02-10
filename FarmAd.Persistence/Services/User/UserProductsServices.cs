@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using FarmAd.Application.Repositories.Product;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class UserProductsServices : IUserProductsServices
     {

@@ -14,7 +14,7 @@ namespace FarmAd.Application.DTOs.Area
     {
         public string Id { get; set; }
         public string? Username { get; set; }
-        public string? Name { get; set; }
+        public string? Fullname { get; set; }
         public string? Password { get; set; }
         public string? RoleId { get; set; }
         public bool IsAdmin { get; set; }
@@ -23,7 +23,7 @@ namespace FarmAd.Application.DTOs.Area
     {
         public UserManagerEditDtoValidator()
         {
-            RuleFor(x => x.Name).MaximumLength(150).WithMessage("Ad hissəsinin uzunluğu 150-dən böyük ola bilməz!");
+            RuleFor(x => x.Fullname).MaximumLength(150).WithMessage("Ad hissəsinin uzunluğu 150-dən böyük ola bilməz!");
             RuleFor(x => x.Username).MaximumLength(150).WithMessage("Username hissəsinin uzunluğu 150-dən böyük ola bilməz!");
             RuleFor(x => x.Password).MaximumLength(150).WithMessage("Password hissəsinin uzunluğu 150-dən böyük ola bilməz!");
         }

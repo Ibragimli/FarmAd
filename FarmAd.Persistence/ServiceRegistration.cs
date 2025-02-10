@@ -1,7 +1,11 @@
-﻿using FarmAd.Application.Repositories.Category;
+﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Application.Abstractions.Services.Configurations;
+using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.City;
 using FarmAd.Application.Repositories.ContactUs;
+using FarmAd.Application.Repositories.Endpoint;
 using FarmAd.Application.Repositories.ImageSetting;
+using FarmAd.Application.Repositories.Menu;
 using FarmAd.Application.Repositories.Payment;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.ProductFeature;
@@ -13,12 +17,15 @@ using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Application.Repositories.UserTerm;
 using FarmAd.Application.Repositories.WishItem;
 using FarmAd.Domain.Entities.Identity;
+using FarmAd.Infrastructure.Service;
 using FarmAd.Infrastructure.Service.User;
 using FarmAd.Persistence.Contexts;
 using FarmAd.Persistence.Repositories.Category;
 using FarmAd.Persistence.Repositories.City;
 using FarmAd.Persistence.Repositories.ContactUs;
+using FarmAd.Persistence.Repositories.Endpoint;
 using FarmAd.Persistence.Repositories.ImageSetting;
+using FarmAd.Persistence.Repositories.Menu;
 using FarmAd.Persistence.Repositories.Payment;
 using FarmAd.Persistence.Repositories.Product;
 using FarmAd.Persistence.Repositories.ProductFeature;
@@ -29,6 +36,9 @@ using FarmAd.Persistence.Repositories.SubCategory;
 using FarmAd.Persistence.Repositories.UserAuthentication;
 using FarmAd.Persistence.Repositories.UserTerm;
 using FarmAd.Persistence.Repositories.WishItem;
+using FarmAd.Persistence.Services;
+using FarmAd.Persistence.Services.Configurations;
+using MailKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,13 +56,14 @@ namespace FarmAd.Persistence
         {
 
             //services.AddScoped<IProductService, ProductService>();
-            //services.AddScoped<IAuthService, AuthService>();
-            //services.AddScoped<IRoleService, RoleService>();
-            //services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();
-            //services.AddScoped<IMenuReadRepository, MenuReadRepository>();
-            //services.AddScoped<IEndpointWriteRepository, EndpointWriteRepository>();
-            //services.AddScoped<IEndpointReadRepository, EndpointReadRepository>();
-            //services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
+            services.AddScoped<IApplicationService, ApplicationService>(); 
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();
+            services.AddScoped<IMenuReadRepository, MenuReadRepository>();
+            services.AddScoped<IEndpointWriteRepository, EndpointWriteRepository>();
+            services.AddScoped<IEndpointReadRepository, EndpointReadRepository>();
+            services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICategoryReadRepository, CategoryReadRepository>();
             services.AddScoped<ICategoryWriteRepository, CategoryWriteRepository>();
@@ -87,14 +98,14 @@ namespace FarmAd.Persistence
 
 
             // Identity Konfigürasyonu
-            services.AddIdentity<AppUser, IdentityRole>(opt =>
+            services.AddIdentity<AppUser, AppRole>(opt =>
             {
                 opt.Password.RequiredUniqueChars = 0;
                 opt.Password.RequireUppercase = false;
                 opt.Password.RequireLowercase = false;
                 opt.Password.RequireNonAlphanumeric = false;
                 opt.User.RequireUniqueEmail = false;
-            }).AddDefaultTokenProviders().AddEntityFrameworkStores<DataContext>();
+            }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
 
         }
     }

@@ -11,7 +11,7 @@ using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.City;
 using FarmAd.Application.Repositories.SubCategory;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
 
     public class ProductCreateIndexServices : IProductCreateIndexServices

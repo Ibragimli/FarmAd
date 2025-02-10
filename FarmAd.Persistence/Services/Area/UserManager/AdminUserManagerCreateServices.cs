@@ -32,7 +32,7 @@ namespace FarmAd.Persistence.Service.Area.UserManager
         {
             await DtoCheck(userManagerCreateDto);
             var role = _roleManager.Roles.FirstOrDefault(x => x.Id == userManagerCreateDto.RoleId);
-            AppUser newAdmin = new AppUser { Name = userManagerCreateDto.Name, IsAdmin = userManagerCreateDto.IsAdmin, UserName = userManagerCreateDto.Username/*, rol = role.Name */};
+            AppUser newAdmin = new AppUser { Fullname = userManagerCreateDto.Fullname, IsAdmin = userManagerCreateDto.IsAdmin, UserName = userManagerCreateDto.Username/*, rol = role.Name */};
             var admin = await _userManager.CreateAsync(newAdmin, userManagerCreateDto.Password);
             if (!admin.Succeeded)
                 throw new ValueFormatExpception(admin.Errors.FirstOrDefault().Description);
@@ -54,7 +54,7 @@ namespace FarmAd.Persistence.Service.Area.UserManager
                 throw new ItemNullException("Username  qeyd edin!");
             if (userManagerCreateDto.Password == null)
                 throw new ItemNullException("Password  qeyd edin!");
-            if (userManagerCreateDto.Name == null)
+            if (userManagerCreateDto.Fullname == null)
                 throw new ItemNullException("Ad  qeyd edin!");
             if (userManagerCreateDto.RoleId == null)
                 throw new ItemNullException("Role  qeyd edin!");

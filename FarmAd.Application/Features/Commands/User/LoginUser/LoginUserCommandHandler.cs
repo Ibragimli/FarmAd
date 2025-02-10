@@ -41,11 +41,11 @@ namespace FarmAd.Application.Features.Commands.User.LoginUser
                 Token token = _tokenHandler.CreateAccesToken(400, user);
 
                 //await _userService.UpdateRefreshToken(token.RefreshToken, user.Id, token.Expiration, 405);
-                _logger.LogInformation(user.Name + "-hesaba daxil oldu.");
+                _logger.LogInformation(user.Fullname + "-hesaba daxil oldu.");
                 return new LoginUserCommandResponse()
                 {
                     Token = token,
-                    Message = "Daxil oldunuz " + user.Name + "bəy"
+                    Message = "Daxil oldunuz " + user.Fullname + "bəy"
 
                 };
 

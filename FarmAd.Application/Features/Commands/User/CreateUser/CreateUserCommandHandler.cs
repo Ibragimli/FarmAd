@@ -21,7 +21,7 @@ namespace FarmAd.Application.Features.Commands.User.CreateUser
                 Id = Guid.NewGuid().ToString(),
                 UserName = request.Username,
                 Email = request.Email,
-                Name = request.NameSurname
+                Fullname = request.NameSurname
 
             }, request.Password);
             if (result.Succeeded)

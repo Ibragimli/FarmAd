@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class UserService : IUserService
     {

@@ -23,7 +23,7 @@ using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Infrastructure.Service.User;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
 
     public class ProductCreateServices : IProductCreateServices
@@ -263,7 +263,7 @@ namespace FarmAd.Persistence.Service.User
                     IsAdmin = false,
                     Balance = 0,
                     Email = email,
-                    Name = fullname,
+                    Fullname = fullname,
                 };
                 var result = await _userManager.CreateAsync(newUser, code);
                 if (!result.Succeeded)

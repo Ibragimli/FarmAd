@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Application.Repositories.ContactUs;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class ContactUsServices : IContactUsServices
     {

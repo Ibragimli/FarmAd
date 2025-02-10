@@ -11,7 +11,7 @@ using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
 using FarmAd.Application.Repositories.Payment;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class BalanceIncreaseServices : IBalanceIncreaseServices
     {

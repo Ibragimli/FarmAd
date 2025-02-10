@@ -10,14 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class AnaSehifeIndexServices : IAnaSehifeIndexServices
     {
         private readonly ICategoryReadRepository _categoryReadRepository;
         private readonly IProductReadRepository _productReadRepository;
 
-        public AnaSehifeIndexServices(ICategoryReadRepository categoryReadRepository,IProductReadRepository productReadRepository)
+        public AnaSehifeIndexServices(ICategoryReadRepository categoryReadRepository, IProductReadRepository productReadRepository)
         {
             _categoryReadRepository = categoryReadRepository;
             _productReadRepository = productReadRepository;

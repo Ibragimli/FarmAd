@@ -14,7 +14,7 @@ using FarmAd.Domain.Entities.Identity;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.WishItem;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class ProductWishlistDeleteServices : IProductWishlistDeleteServices
     {

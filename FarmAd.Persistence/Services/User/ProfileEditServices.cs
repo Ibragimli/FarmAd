@@ -11,7 +11,7 @@ using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.SubCategory;
 using FarmAd.Application.Repositories.Category;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class ProfileEditServices : IProfileEditServices
     {
@@ -36,7 +36,7 @@ namespace FarmAd.Persistence.Service.User
             if (editDto.UserId == null)
                 throw new NotFoundException("user404");
 
-            if (editDto.Email == null && editDto.Name == null)
+            if (editDto.Email == null && editDto.Fullname == null)
                 throw new ItemNullException("Email Null");
 
         }
@@ -53,10 +53,10 @@ namespace FarmAd.Persistence.Service.User
                     checkBool = true;
                 }
 
-            if (user.Name != editDto.Name)
-                if (editDto.Name != null)
+            if (user.Fullname != editDto.Fullname)
+                if (editDto.Fullname != null)
                 {
-                    user.Name = editDto.Name;
+                    user.Fullname = editDto.Fullname;
                     checkBool = true;
                 }
             if (checkBool)

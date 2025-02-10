@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Application.Repositories.UserAuthentication;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class ProfileLoginServices : IProfileLoginServices
     {
@@ -108,7 +108,7 @@ namespace FarmAd.Persistence.Service.User
             var UserExists = await _userManager.Users.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
             var tokenResetPassword = await _userManager.GeneratePasswordResetTokenAsync(UserExists);
 
-            if (UserExists == null || !(await _userManager.VerifyUserTokenAsync(UserExists, _userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", tokenResetPassword)))
+            if (UserExists == null || !await _userManager.VerifyUserTokenAsync(UserExists, _userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", tokenResetPassword))
             {
                 throw new NotFoundException("NotFound");
             }

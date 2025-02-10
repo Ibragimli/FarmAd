@@ -66,9 +66,9 @@ namespace FarmAd.Persistence.Service.Area.UserManagers
                 userExits.NormalizedUserName = userManagerEditDto.Username.ToUpper();
                 checkBool = true;
             }
-            if (userExits.Name != userManagerEditDto.Name)
+            if (userExits.Fullname != userManagerEditDto.Fullname)
             {
-                userExits.Name = userManagerEditDto.Name;
+                userExits.Fullname = userManagerEditDto.Fullname;
                 checkBool = true;
             }
             if (userExits.IsAdmin != userManagerEditDto.IsAdmin)

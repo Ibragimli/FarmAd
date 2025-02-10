@@ -11,7 +11,7 @@ using FarmAd.Domain.Entities.Identity;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.Payment;
 
-namespace FarmAd.Persistence.Service.User
+namespace FarmAd.Persistence.Services.User
 {
     public class ProfileIndexServices : IProfileIndexServices
     {
@@ -28,12 +28,12 @@ namespace FarmAd.Persistence.Service.User
             ProfileGetDto profileVM = new ProfileGetDto
             {
                 User = user,
-                ActiveProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Active && x.ProductFeatures.PhoneNumber == user.PhoneNumber, true,"ProductFeatures.City", "ProductFeatures", "ProductImages"),
+                ActiveProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Active && x.ProductFeatures.PhoneNumber == user.PhoneNumber, true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
                 DeactiveProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.DeActive && x.ProductFeatures.PhoneNumber == user.PhoneNumber, true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
-                WaitedProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Waiting && x.ProductFeatures.PhoneNumber == user.PhoneNumber,true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
-                DisabledProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Disabled && x.ProductFeatures.PhoneNumber == user.PhoneNumber,true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
+                WaitedProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Waiting && x.ProductFeatures.PhoneNumber == user.PhoneNumber, true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
+                DisabledProducts = await _productReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductFeatures.ProductStatus == ProductStatus.Disabled && x.ProductFeatures.PhoneNumber == user.PhoneNumber, true, "ProductFeatures.City", "ProductFeatures", "ProductImages"),
                 PersonalPayments = await _paymentReadRepository.GetAllAsync(x => !x.IsDelete && x.Service == PaymentService.BalancePayment && x.AppUserId == user.Id),
-                ProductPayments = await _paymentReadRepository.GetAllAsync(x => !x.IsDelete && x.Service == PaymentService.ProductPayment && x.AppUserId == user.Id, true,"AppUser", "Products.ProductFeatures"),
+                ProductPayments = await _paymentReadRepository.GetAllAsync(x => !x.IsDelete && x.Service == PaymentService.ProductPayment && x.AppUserId == user.Id, true, "AppUser", "Products.ProductFeatures"),
                 ProfileEditDto = new ProfileEditDto(),
             };
             return profileVM;
