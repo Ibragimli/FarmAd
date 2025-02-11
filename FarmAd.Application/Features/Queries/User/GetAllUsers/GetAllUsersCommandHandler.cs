@@ -9,24 +9,22 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace FarmAd.Application.Features.Commands.User.LoginUser
+namespace FarmAd.Application.Features.Queries.User.GetAllUsers
 {
-    public class LoginUserCommandHandler : IRequestHandler<LoginUserCommandRequest, LoginUserCommandResponse>
+    public class GetAllUsersCommandHandler : IRequestHandler<GetAllUsersCommandRequest, GetAllUsersCommandResponse>
     {
         private readonly IAuthService _authService;
 
-        public LoginUserCommandHandler(IAuthService authService)
+        public GetAllUsersCommandHandler(IAuthService authService)
         {
             _authService = authService;
         }
-        public async Task<LoginUserCommandResponse> Handle(LoginUserCommandRequest request, CancellationToken cancellationToken)
+        public async Task<GetAllUsersCommandResponse> Handle(GetAllUsersCommandRequest request, CancellationToken cancellationToken)
         {
-            string token = await _authService.Login(request.Username);
+            List<AllUserDto> dtos = await _authService.GetAllUser();
             return new()
             {
-                Token = token,
-                Succes = true,
-                Message = "true",
+                AllUserDtos = dtos,
             };
         }
     }

@@ -9,7 +9,7 @@ namespace FarmAd.Domain.Entities.Identity
 {
     public class AppUser : IdentityUser
     {
-        public string Fullname { get; set; }
+        public string? Fullname { get; set; }
         public bool IsAdmin { get; set; }
         public decimal? Balance { get; set; }
         public string? RefreshToken { get; set; }

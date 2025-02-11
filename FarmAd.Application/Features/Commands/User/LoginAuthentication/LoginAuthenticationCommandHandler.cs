@@ -9,23 +9,23 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace FarmAd.Application.Features.Commands.User.LoginUser
+namespace FarmAd.Application.Features.Commands.User.LoginAuthentication
 {
-    public class LoginUserCommandHandler : IRequestHandler<LoginUserCommandRequest, LoginUserCommandResponse>
+    public class LoginAuthenticationCommandHandler : IRequestHandler<LoginAuthenticationCommandRequest, LoginAuthenticationCommandResponse>
     {
         private readonly IAuthService _authService;
 
-        public LoginUserCommandHandler(IAuthService authService)
+        public LoginAuthenticationCommandHandler(IAuthService authService)
         {
             _authService = authService;
         }
-        public async Task<LoginUserCommandResponse> Handle(LoginUserCommandRequest request, CancellationToken cancellationToken)
+        public async Task<LoginAuthenticationCommandResponse> Handle(LoginAuthenticationCommandRequest request, CancellationToken cancellationToken)
         {
-            string token = await _authService.Login(request.Username);
+           var token = await _authService.LoginAuthentication(request.Username, request.Code, request.Token);
             return new()
             {
-                Token = token,
                 Succes = true,
+                Token = token,
                 Message = "true",
             };
         }

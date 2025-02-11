@@ -16,6 +16,7 @@ namespace FarmAd.Persistence.Contexts
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<AppRole> AppRoles { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<ContactUs> ContactUs { get; set; }
         public DbSet<Category> Categories { get; set; }

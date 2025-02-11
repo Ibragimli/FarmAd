@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FarmAd.Application.Features.Commands.User.LoginUser;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,7 @@ namespace FarmAd.Application
     {
         public static void AddApplicationServices(this IServiceCollection services)
         {
+            services.AddMediatR(typeof(LoginUserCommandHandler).Assembly);
 
         }
     }

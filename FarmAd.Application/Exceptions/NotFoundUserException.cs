@@ -9,7 +9,7 @@ namespace FarmAd.Application.Exceptions
 {
     public class NotFoundUserException : Exception
     {
-        public NotFoundUserException()
+        public NotFoundUserException() : base("İstifadəçi tapılmadı")
         {
         }
 
@@ -17,11 +17,13 @@ namespace FarmAd.Application.Exceptions
         {
         }
 
-        public NotFoundUserException(string? message, Exception? innerException) : base(message, innerException)
+        public NotFoundUserException(string? message, Exception? innerException)
+            : base(message, innerException)
         {
         }
 
-        protected NotFoundUserException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected NotFoundUserException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

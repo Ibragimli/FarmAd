@@ -1,5 +1,6 @@
 ﻿using FarmAd.Application.Abstractions.Services;
 using FarmAd.Application.Abstractions.Services.Configurations;
+using FarmAd.Application.Abstractions.Services.User;
 using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.City;
 using FarmAd.Application.Repositories.ContactUs;
@@ -36,6 +37,7 @@ using FarmAd.Persistence.Repositories.SubCategory;
 using FarmAd.Persistence.Repositories.UserAuthentication;
 using FarmAd.Persistence.Repositories.UserTerm;
 using FarmAd.Persistence.Repositories.WishItem;
+using FarmAd.Persistence.Service.User;
 using FarmAd.Persistence.Services;
 using FarmAd.Persistence.Services.Configurations;
 using MailKit;
@@ -56,7 +58,8 @@ namespace FarmAd.Persistence
         {
 
             //services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IApplicationService, ApplicationService>(); 
+            services.AddScoped<IApplicationService, ApplicationService>();
+            services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();

@@ -34,8 +34,8 @@ namespace FarmAd.Persistence.Services.User
         public async Task<UserAuthentication> LoginAuthentication(string code, string phoneNumber, string token)
         {
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Token == token);
-            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Token == token);
+            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code );
+            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false );
             if (existAuthentication == null)
                 throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
             if (existAuthentication.ExpirationDate.TimeOfDay < now)

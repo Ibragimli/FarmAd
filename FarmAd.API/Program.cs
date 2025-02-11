@@ -97,19 +97,19 @@ builder.Services.AddControllers().AddFluentValidation(x => x.RegisterValidatorsF
 
 #region JwtBearer
 //JwtBearer
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//        .AddJwtBearer("Admin", opt =>
-//        opt.TokenValidationParameters = new()
-//        {
-//            ValidateAudience = true,
-//            ValidateIssuer = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidAudience = builder.Configuration["Token:Audience"],
-//            ValidIssuer = builder.Configuration["Token:Issuer"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
-//            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null && expires > DateTime.UtcNow.AddSeconds(-1),
-//        });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer("Admin", opt =>
+        opt.TokenValidationParameters = new()
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidAudience = builder.Configuration["Token:Audience"],
+            ValidIssuer = builder.Configuration["Token:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
+            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null && expires > DateTime.UtcNow.AddHours(4).AddSeconds(-1),
+        });
 //JwtBearer
 #endregion 
 

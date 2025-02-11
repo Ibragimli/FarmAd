@@ -9,8 +9,8 @@ namespace FarmAd.Domain.Entities
 {
     public class UserAuthentication : BaseEntity
     {
-        public string Token { get; set; }
-        public string PhoneNumber { get; set; }
+        //public string Token { get; set; }
+        public string Username { get; set; }
         public string Code { get; set; }
         public bool IsDisabled { get; set; }
         public int Count { get; set; }

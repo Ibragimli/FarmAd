@@ -180,8 +180,8 @@ namespace FarmAd.Persistence.Services.User
         {
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
 
-            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Token == token && x.PhoneNumber == phoneNumber);
-            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Token == token);
+            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
+            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false);
             if (existAuthentication == null)
                 throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
 

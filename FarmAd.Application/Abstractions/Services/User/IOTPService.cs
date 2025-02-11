@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 
 namespace FarmAd.Application.Abstractions.Services.User
 {
-    public interface IAuthenticationServices
+    public interface IOTPService
     {
         public string CreateToken();
         public string CodeCreate();
         public string encryptSha256(string randomString);
-
-
-        public Task<UserAuthentication> CreateAuthentication(string token, string code, string phoneNumber);
+        public Task<UserAuthentication> CreateAuthentication( string code, string phoneNumber);
 
     }
 }
