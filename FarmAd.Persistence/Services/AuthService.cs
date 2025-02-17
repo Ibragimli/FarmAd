@@ -149,7 +149,7 @@ namespace FarmAd.Persistence.Services
             var user = await _userManager.FindByNameAsync(newUsername);
             var auth = await _oTPService.CreateAuthentication(code, newUsername);
             Token token = _tokenHandler.CreateAccesToken(5, user);
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            //await _signInManager.SignInAsync(user, isPersistent: false);
             return token.AccesToken;
         }
 

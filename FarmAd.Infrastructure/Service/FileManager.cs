@@ -1,16 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FarmAd.Application.Abstractions.Helpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Abstractions.Helpers
+namespace FarmAd.Infrastructure.Service
 {
-    public class FileManager
+    public class FileManager:IFileManager
     {
-        public static string Save(string rootPath, string folder, IFormFile file)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public FileManager(IWebHostEnvironment webHostEnvironment)
         {
+            _webHostEnvironment = webHostEnvironment;
+        }
+        public (string,string) Save(string folder, IFormFile file)
+        {
+            string rootPath = _webHostEnvironment.WebRootPath;
             string filename = file.FileName;
             filename = filename.Length <= 64 ? (filename) : (filename.Substring(filename.Length - 64, 64));
 
@@ -21,18 +30,17 @@ namespace FarmAd.Application.Abstractions.Helpers
                 Directory.CreateDirectory(pathExist);
 
             string path = Path.Combine(rootPath, folder, filename);
-
-
-
             using (FileStream stream = new FileStream(path, FileMode.Create))
             {
                 file.CopyTo(stream);
             }
-            return filename;
+            return (filename,path);
+
         }
 
-        public static bool Delete(string rootPath, string folder, string filename)
+        public bool Delete(string folder, string filename)
         {
+            string rootPath = _webHostEnvironment.WebRootPath;
             string path = Path.Combine(rootPath, folder, filename);
             if (System.IO.File.Exists(path))
             {

@@ -22,6 +22,8 @@ using FarmAd.API.Configurations;
 using Serilog.Context;
 using FarmAd.API.Extensions;
 using System.Security.Claims;
+using FarmAd.Infrastructure.Service.Storage.Azure;
+using FarmAd.Infrastructure.Service.Storage.Local;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
@@ -32,7 +34,7 @@ builder.Services.AddApplicationServices();
 
 //builder.Services.AddStorage<LocalStorage>();
 //builder.Services.AddStorage<AzureStorage>();
-//builder.Services.AddStorage(FarmAd.Infrastructure.Enums.StorageType.Local);
+builder.Services.AddStorage(FarmAd.Infrastructure.Enums.StorageType.Local);
 
 
 builder.Services.AddControllers().AddFluentValidation(x => x.RegisterValidatorsFromAssemblyContaining<ProductCreateDto>());

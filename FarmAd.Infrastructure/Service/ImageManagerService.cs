@@ -65,18 +65,23 @@ namespace FarmAd.Infrastructure.Service
             }
         }
 
-        public string FileSave(IFormFile image, string folderName)
-        {
-            return FileManager.Save(_env.WebRootPath, $"uploads/{folderName}", image);
-        }
+        //public string FileSave(IFormFile image, string folderName)
+        //{
+        //    return FileManager.Save(_env.WebRootPath, $"uploads/{folderName}", image);
+        //}
 
-        public void FileDelete(string image, string folderName)
-        {
-            FileManager.Delete(_env.WebRootPath, $"uploads/{folderName}", image);
-        }
+        //public void FileDelete(string image, string folderName)
+        //{
+        //    FileManager.Delete(_env.WebRootPath, $"uploads/{folderName}", image);
+        //}
 
 
         public void DeleteFile(string image, string folderName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string FileSave(IFormFile Image, string folderName)
         {
             throw new NotImplementedException();
         }

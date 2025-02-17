@@ -59,6 +59,8 @@ namespace FarmAd.Persistence
         {
 
             //services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductUserIdWriteRepository, ProductUserIdWriteRepository>();
+
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -97,6 +99,7 @@ namespace FarmAd.Persistence
             services.AddScoped<IUserTermWriteRepository, UserTermWriteRepository>();
             services.AddScoped<IWishItemReadRepository, WishItemReadRepository>();
             services.AddScoped<IWishItemWriteRepository, WishItemWriteRepository>();
+            services.AddScoped<IProductCreateServices, ProductCreateServices>();
 
 
 

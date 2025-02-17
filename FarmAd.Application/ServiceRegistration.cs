@@ -1,4 +1,5 @@
 ﻿using FarmAd.Application.Features.Commands.User.LoginUser;
+using FarmAd.Application.MappingProfiles;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,6 +15,7 @@ namespace FarmAd.Application
         public static void AddApplicationServices(this IServiceCollection services)
         {
             services.AddMediatR(typeof(LoginUserCommandHandler).Assembly);
+            services.AddAutoMapper(opt => { opt.AddProfile(new AppProfile()); });
 
         }
     }

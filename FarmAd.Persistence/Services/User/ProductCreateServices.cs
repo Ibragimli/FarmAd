@@ -22,6 +22,8 @@ using FarmAd.Persistence.Repositories.Product;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Infrastructure.Service.User;
+using FarmAd.Application.Abstractions.Storage;
+using AutoMapper;
 
 namespace FarmAd.Persistence.Services.User
 {
@@ -29,7 +31,9 @@ namespace FarmAd.Persistence.Services.User
     public class ProductCreateServices : IProductCreateServices
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly ProductUserIdWriteRepository _productUserIdWriteRepository;
+        private readonly IMapper _mapper;
+        private readonly IStorageService _storageService;
+        private readonly IProductUserIdWriteRepository _productUserIdWriteRepository;
         private readonly IUserService _userService;
         private readonly IUserAuthenticationWriteRepository _userAuthenticationWriteRepository;
         private readonly IUserAuthenticationReadRepository _userAuthenticationReadRepository;
@@ -40,9 +44,11 @@ namespace FarmAd.Persistence.Services.User
         private readonly IEmailServices _emailServices;
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public ProductCreateServices(UserManager<AppUser> userManager, ProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
+        public ProductCreateServices(UserManager<AppUser> userManager, IMapper mapper, IStorageService storageService, IProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
         {
             _userManager = userManager;
+            _mapper = mapper;
+            _storageService = storageService;
             _productUserIdWriteRepository = productUserIdWriteRepository;
             _userService = userService;
             _userAuthenticationWriteRepository = userAuthenticationWriteRepository;
@@ -54,76 +60,104 @@ namespace FarmAd.Persistence.Services.User
             _emailServices = emailServices;
             _contextAccessor = contextAccessor;
         }
-        public async Task CreateImageFormFile(List<IFormFile> imageFiles, int ProductId)
+        public async Task CreateImageFormFileAsync(List<IFormFile> imageFiles, int productId)
         {
-            int i = 1;
-            bool ProductStatus;
-            foreach (var image in imageFiles)
+            List<ProductImage> productImages = new();
+
+            for (int i = 0; i < imageFiles.Count; i++)
             {
-                ProductStatus = false;
-                if (i == 1)
-                    ProductStatus = true;
-                ProductImage Productimage = new ProductImage
+                var (fileName, path) = _storageService.UploadAsync("files\\products", imageFiles[i]);
+
+                productImages.Add(new ProductImage
                 {
-                    IsProduct = ProductStatus,
-                    ProductId = ProductId,
-                    Image = _manageImageHelper.FileSave(image, "Product"),
-                };
-                await _productImageWriteRepository.AddAsync(Productimage);
-                i++;
+                    IsProduct = i == 0, // İlk resim için true, diğerleri false olacak
+                    ProductId = productId,
+                    Image = fileName,
+                    Path = path
+                });
             }
+            await _productImageWriteRepository.AddRangeAsync(productImages);
             await _productImageWriteRepository.SaveAsync();
         }
-
-        public async Task CreateImageString(List<string> imageFiles, int ProductId)
+        public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
         {
-            int i = 1;
-            bool ProductStatus;
-            foreach (var image in imageFiles)
+            foreach (var item in imageFiles)
             {
-                ProductStatus = false;
-                if (i == 1)
-                    ProductStatus = true;
-                ProductImage Productimage = new ProductImage
-                {
-                    IsProduct = ProductStatus,
-                    ProductId = ProductId,
-                    Image = image,
-                };
-                await _productImageWriteRepository.AddAsync(Productimage);
+                var (filename, path) = _storageService.UploadAsync("files\\products", item); ;
 
-                i++;
+                ProductCreateDto.ImageFilesStr.Add(filename);
             }
-            await _productImageWriteRepository.SaveAsync();
+            var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
+            _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
+            ProductCreateDto.ImageFiles = null;
+            var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
+            _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
         }
+        public ProductCreateDto GetProductCookie()
+        {
+            ProductCreateDto ProductCreateDto = new ProductCreateDto();
+
+            //cookie
+            string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
+
+            if (ProductItem != null)
+                ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
+            else
+                throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
+            return ProductCreateDto;
+        }
+
+        //public async Task CreateImageString(List<string> imageFiles, int ProductId)
+        //{
+        //    int i = 1;
+        //    bool ProductStatus;
+        //    foreach (var image in imageFiles)
+        //    {
+        //        ProductStatus = false;
+        //        if (i == 1)
+        //            ProductStatus = true;
+        //        ProductImage Productimage = new ProductImage
+        //        {
+        //            IsProduct = ProductStatus,
+        //            ProductId = ProductId,
+        //            Image = image,
+        //        };
+        //        await _productImageWriteRepository.AddAsync(Productimage);
+
+        //        i++;
+        //    }
+        //    await _productImageWriteRepository.SaveAsync();
+        //}
 
         public async Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto)
         {
-            ProductFeature features = new ProductFeature
-            {
-                Name = ProductDto.ProductName,
-                CityId = ProductDto.CityId,
-                Describe = ProductDto.Describe,
-                Email = ProductDto.Email,
-                PhoneNumber = ProductDto.PhoneNumber,
-                SubCategoryId = ProductDto.SubCategoryId,
-                Price = ProductDto.Price,
-                PriceCurrency = ProductDto.PriceCurrency,
-                IsShipping = ProductDto.IsShipping,
-                IsNew = ProductDto.IsNew,
-                ViewCount = 0,
-                WishCount = 0,
-                IsPremium = false,
-                IsVip = false,
-                ProductStatus = ProductStatus.Waiting,
-                IsDisabled = false,
-                ModifiedDate = DateTime.UtcNow.AddHours(4),
-                IsDelete = false,
+            var productFeature = _mapper.Map<ProductFeature>(ProductDto);
+            productFeature.ProductStatus = ProductStatus.Waiting;
+            //ProductFeature features = new ProductFeature
+            //{
+            //    Name = ProductDto.ProductName,
+            //    CityId = ProductDto.CityId,
+            //    Describe = ProductDto.Describe,
+            //    Email = ProductDto.Email,
+            //    PhoneNumber = ProductDto.PhoneNumber,
+            //    SubCategoryId = ProductDto.SubCategoryId,
+            //    Price = ProductDto.Price,
+            //    PriceCurrency = ProductDto.PriceCurrency,
+            //    IsShipping = ProductDto.IsShipping,
+            //    IsNew = ProductDto.IsNew,
+            //    ViewCount = 0,
+            //    WishCount = 0,
+            //    IsPremium = false,
+            //    IsVip = false,
+            //    ProductStatus = ProductStatus.Waiting,
+            //    IsDisabled = false,
+            //    ModifiedDate = DateTime.UtcNow.AddHours(4),
+            //    IsDelete = false,
 
-            };
-            await _productFeatureWriteRepository.AddAsync(features);
+            //};
+            await _productFeatureWriteRepository.AddAsync(productFeature);
             await _productFeatureWriteRepository.SaveAsync();
-            return features;
+            return productFeature;
         }
 
         public async Task<Product> CreateProduct(ProductFeature features)
@@ -163,35 +197,22 @@ namespace FarmAd.Persistence.Services.User
         {
             _emailServices.Send(email, "Doğrulama kodunuz", code);
         }
-        public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
-        {
-            foreach (var item in imageFiles)
-            {
-                var filename = _manageImageHelper.FileSave(item, "Product");
-                ProductCreateDto.ImageFilesStr.Add(filename);
-            }
-            var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
-            _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
-            ProductCreateDto.ImageFiles = null;
-            var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
-            _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
-        }
-        public async Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, string token, List<string> images)
+
+        public async Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, List<string> images)
         {
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
 
             var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
-            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false);
-            if (existAuthentication == null)
+            if (authentication == null)
                 throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
 
-            if (existAuthentication.ExpirationDate.TimeOfDay < now)
+            if (authentication.ExpirationDate.TimeOfDay < now)
             {
                 foreach (var image in images)
                 {
                     _manageImageHelper.DeleteFile(image, "Product");
                 }
-                existAuthentication.IsDisabled = true;
+                authentication.IsDisabled = true;
                 _contextAccessor.HttpContext.Response.Cookies.Delete("ProductVM");
                 _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
                 await _userAuthenticationWriteRepository.SaveAsync();
@@ -202,41 +223,26 @@ namespace FarmAd.Persistence.Services.User
             //Kod dogrulugunun yoxlanilmasi, təkrar yoxlama limiti
             if (authentication == null)
             {
-                if (existAuthentication != null)
-                {
-                    if (existAuthentication.Count > 1)
-                        existAuthentication.Count -= 1;
-                    else
-                    {
-                        foreach (var image in images)
-                        {
-                            _manageImageHelper.DeleteFile(image, "Product");
-                        }
-                        existAuthentication.IsDisabled = true;
-                        _contextAccessor.HttpContext.Response.Cookies.Delete("ProductVM");
-                        _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
-                    }
-                    await _userAuthenticationWriteRepository.SaveAsync();
 
+                if (authentication.Count > 1)
+                    authentication.Count -= 1;
+                else
+                {
+                    foreach (var image in images)
+                    {
+                        _manageImageHelper.DeleteFile(image, "Product");
+                    }
+                    authentication.IsDisabled = true;
+                    _contextAccessor.HttpContext.Response.Cookies.Delete("ProductVM");
+                    _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
                 }
+                await _userAuthenticationWriteRepository.SaveAsync();
+
                 throw new AuthenticationCodeException("Kod yanlışdır!");
             }
             return authentication;
         }
-        public ProductCreateDto GetProductCookie()
-        {
-            ProductCreateDto ProductCreateDto = new ProductCreateDto();
 
-            //cookie
-            string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
-
-            if (ProductItem != null)
-                ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
-            else
-                throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
-            return ProductCreateDto;
-
-        }
         public List<string> GetImageFilesCookie()
         {
             List<string> images = new List<string>();
@@ -301,5 +307,6 @@ namespace FarmAd.Persistence.Services.User
             _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
             await _userAuthenticationWriteRepository.SaveAsync();
         }
+
     }
 }

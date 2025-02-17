@@ -13,8 +13,8 @@ namespace FarmAd.Application.Abstractions.Services.User
     {
     
         Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto);
-        Task CreateImageString(List<string> imageFiles, int ProductId);
-        Task CreateImageFormFile(List<IFormFile> imageFiles, int ProductId);
+        //Task CreateImageString(List<string> imageFiles, int ProductId);
+        Task CreateImageFormFileAsync(List<IFormFile> imageFiles, int ProductId);
         void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto);
         void SendCode(string email, string code);
         Task<Product> CreateProduct(ProductFeature features);
@@ -22,7 +22,7 @@ namespace FarmAd.Application.Abstractions.Services.User
         //void SaveChange(Product Product);
         //void SaveContext(Product Product);
 
-        Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, string token,List<string> images);
+        Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber,List<string> images);
         ProductCreateDto GetProductCookie();
         List<string> GetImageFilesCookie();
         Task<AppUser> CreateNewUser(string code, string phoneNumber, string email, string fullname);

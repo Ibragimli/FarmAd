@@ -11,6 +11,7 @@ namespace FarmAd.Domain.Entities
     public class ProductImage : BaseEntity
     {
         public string Image { get; set; }
+        public string Path { get; set; }
         public int ProductId { get; set; }
         public bool IsProduct { get; set; }
         public Product Product { get; set; }
