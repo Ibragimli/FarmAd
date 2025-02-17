@@ -1,4 +1,5 @@
 ﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Application.Abstractions.Services.Area;
 using FarmAd.Application.Abstractions.Services.Configurations;
 using FarmAd.Application.Abstractions.Services.User;
 using FarmAd.Application.Repositories.Category;
@@ -37,6 +38,7 @@ using FarmAd.Persistence.Repositories.SubCategory;
 using FarmAd.Persistence.Repositories.UserAuthentication;
 using FarmAd.Persistence.Repositories.UserTerm;
 using FarmAd.Persistence.Repositories.WishItem;
+using FarmAd.Persistence.Service.Area;
 using FarmAd.Persistence.Service.User;
 using FarmAd.Persistence.Services;
 using FarmAd.Persistence.Services.Configurations;
@@ -100,6 +102,8 @@ namespace FarmAd.Persistence
             services.AddScoped<IWishItemReadRepository, WishItemReadRepository>();
             services.AddScoped<IWishItemWriteRepository, WishItemWriteRepository>();
             services.AddScoped<IProductCreateServices, ProductCreateServices>();
+            services.AddScoped<IAdminCityServices, AdminCityServices>();
+            services.AddScoped<IAdminCategoryServices, AdminCategoryServices>();
 
 
 

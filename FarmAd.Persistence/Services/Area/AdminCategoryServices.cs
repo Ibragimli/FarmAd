@@ -11,157 +11,107 @@ using FarmAd.Infrastructure.Service;
 using FarmAd.Application.Abstractions.Services;
 using FarmAd.Application.Repositories.Category;
 using FarmAd.Application.Repositories.SubCategory;
+using FarmAd.Application.DTOs.Area;
+using FarmAd.Application.Abstractions.Storage.Local;
+using FarmAd.Application.Abstractions.Storage;
 
 namespace FarmAd.Persistence.Service.Area
 {
     public class AdminCategoryServices : IAdminCategoryServices
     {
         private readonly ICategoryReadRepository _categoryReadRepository;
+        private readonly IStorageService _storageService;
         private readonly ISubCategoryReadRepository _subCategoryReadRepository;
         private readonly ICategoryWriteRepository _categoryWriteRepository;
         private readonly IImageManagerService _manageImageHelper;
 
-        public AdminCategoryServices(ICategoryReadRepository categoryReadRepository, ISubCategoryReadRepository subCategoryReadRepository, ICategoryWriteRepository categoryWriteRepository, IImageManagerService manageImageHelper)
+        public AdminCategoryServices(ICategoryReadRepository categoryReadRepository, IStorageService storageService, ISubCategoryReadRepository subCategoryReadRepository, ICategoryWriteRepository categoryWriteRepository, IImageManagerService manageImageHelper)
         {
             _categoryReadRepository = categoryReadRepository;
+            _storageService = storageService;
             _subCategoryReadRepository = subCategoryReadRepository;
             _categoryWriteRepository = categoryWriteRepository;
             _manageImageHelper = manageImageHelper;
         }
-        public async Task CategoryCreate(Category category)
+        public async Task CategoryCreate(CategoryCreateDto categoryCreateDto)
         {
-            Category newCategory = new Category();
-            if (await _categoryReadRepository.IsExistAsync(x => x.Name == category.Name))
+            if (await _categoryReadRepository.IsExistAsync(x => x.Name == categoryCreateDto.Name))
                 throw new ItemAlreadyException("Bu adda kategoriya mövcuddur!");
 
-            bool check = false;
-            if (category.CategoryImageFile != null)
-                _manageImageHelper.ValidateProduct(category.CategoryImageFile);
+            if (categoryCreateDto.Image != null)
+                _manageImageHelper.ValidateProduct(categoryCreateDto.Image);
 
-            if (category.Name != null)
-            {
-                if (category.Name.Length > 50)
-                    throw new ItemFormatException("Kategoriyanın maksimum  uzunluğu 50 ola bilər");
-                newCategory.Name = category.Name;
-                check = true;
-            }
-            else
+            if (categoryCreateDto.Name != null)
                 throw new ItemNullException("Kategoriya boş ola bilməz");
 
+            if (categoryCreateDto.Name.Length > 50)
+                throw new ItemFormatException("Kategoriyanın maksimum  uzunluğu 50 ola bilər");
 
-            string imageFilename = ProductImageCreate(category);
+            Category newCategory = new Category();
 
-            if (imageFilename != "false")
-            {
-                newCategory.Image = imageFilename;
-                check = true;
-            }
+            var image = _storageService.UploadAsync("files\\categories", categoryCreateDto.Image);
 
-            if (check)
-            {
-                await _categoryWriteRepository.AddAsync(newCategory);
-                await _categoryWriteRepository.SaveAsync();
-            }
+            newCategory.Name = categoryCreateDto.Name;
+            newCategory.Image = image.fileName;
+            newCategory.ImagePath = image.path;
+
+
+            await _categoryWriteRepository.AddAsync(newCategory);
+            await _categoryWriteRepository.SaveAsync();
         }
 
-        public async Task CategoryEdit(Category category)
+        public async Task CategoryEdit(CategoryUpdateDto categoryUpdateDto)
         {
-            bool check = false;
-            var oldCategory = await _categoryReadRepository.GetAsync(x => x.Id == category.Id);
-            if (await _categoryReadRepository.IsExistAsync(x => x.Name == category.Name && x.Id != category.Id))
+            if (await _categoryReadRepository.IsExistAsync(x => x.Name == categoryUpdateDto.Name && x.Id != categoryUpdateDto.Id))
                 throw new ItemAlreadyException("Bu adda kategoriya mövcuddur!");
+            var oldCategory = await _categoryReadRepository.GetAsync(x => x.Id == categoryUpdateDto.Id);
+            if (oldCategory == null)
+                throw new ItemNullException("Kategoriya tapılmadı");
+            if (categoryUpdateDto.Name.Length > 50)
+                throw new ItemFormatException("Kategoriyanın maksimum  uzunluğu 50 ola bilər");
 
-            if (category.CategoryImageFile != null)
-                _manageImageHelper.ValidateProduct(category.CategoryImageFile);
+            if (categoryUpdateDto.Image != null)
+                _manageImageHelper.ValidateProduct(categoryUpdateDto.Image);
 
-            if (category.Name != null)
-            {
-                if (category.Name.Length > 50)
-                    throw new ItemFormatException("Kategoriyanın maksimum  uzunluğu 50 ola bilər");
-                if (category.Name != oldCategory.Name)
-                {
-                    oldCategory.Name = category.Name;
-                    check = true;
-                }
-            }
-            else
-                throw new ItemNullException("Kategoriya boş ola bilməz");
+            var newImage = _storageService.UploadAsync("files\\categories", categoryUpdateDto.Image);
+
+            oldCategory.Name = categoryUpdateDto.Name;
+            oldCategory.Image = newImage.fileName;
+            oldCategory.ImagePath = newImage.path;
 
 
-            string imageFilename = ProductImageChange(category, oldCategory);
-
-            if (imageFilename != "false")
-            {
-                oldCategory.Image = imageFilename;
-                check = true;
-            }
-
-            if (check)
-            {
-                oldCategory.ModifiedDate = DateTime.UtcNow.AddHours(4);
-                await _categoryWriteRepository.SaveAsync();
-            }
+            oldCategory.ModifiedDate = DateTime.UtcNow.AddHours(4);
+            await _categoryWriteRepository.SaveAsync();
         }
 
         public async Task CategoryDelete(int id)
         {
             var oldCategory = await _categoryReadRepository.GetAsync(x => x.Id == id);
-            bool check = await _subCategoryReadRepository.IsExistAsync(x => x.CategoryId == id);
-            if (check)
+            if (oldCategory == null)
+                throw new ItemNullException("Kategoriya tapılmadı");
+            if (await _subCategoryReadRepository.IsExistAsync(x => x.CategoryId == id))
                 throw new ItemAlreadyException("Kategoriya altkateqoriyalarda istifadə olunur!!!");
-            ProductImageDelete(oldCategory);
+
+            _storageService.DeleteAsync("files\\categories", oldCategory.Image);
             _categoryWriteRepository.Remove(oldCategory);
             await _categoryWriteRepository.SaveAsync();
         }
-        private void ProductImageDelete(Category oldCategory)
-        {
-            var Image = oldCategory.Image;
-            if (Image == null) throw new ImageNullException("Şəkil tapılmadı!");
-            _manageImageHelper.DeleteFile(Image, "category");
-        }
-        private string ProductImageCreate(Category category)
-        {
-            if (category.CategoryImageFile != null)
-            {
-                var ProductImageFile = category.CategoryImageFile;
-                string filename = _manageImageHelper.FileSave(ProductImageFile, "category");
-                return filename;
-            }
-            else
-                throw new ImageNullException("Şəkil hissəsi boş ola bilməz!");
-        }
-        private string ProductImageChange(Category category, Category oldCategory)
-        {
-            if (category.CategoryImageFile != null)
-            {
-                var ProductImageFile = category.CategoryImageFile;
 
-                var Image = oldCategory.Image;
-
-                if (Image == null) throw new ImageNullException("Şəkil tapılmadı!");
-
-                string filename = _manageImageHelper.FileSave(ProductImageFile, "category");
-                _manageImageHelper.DeleteFile(Image, "category");
-                Image = filename;
-
-                return filename;
-            }
-            return "false";
-        }
         public async Task<Category> GetCategory(int id)
         {
             var category = await _categoryReadRepository.GetAsync(x => x.Id == id && !x.IsDelete);
 
             return category;
         }
-        public IQueryable<Category> GetCategories(string name)
+        public (object, int) GetCategories(string name, int page, int size)
         {
-            var category = _categoryReadRepository.AsQueryable();
-            category = category.Where(x => !x.IsDelete);
+            int count = _categoryReadRepository.GetAll().Count();
+            var category = _categoryReadRepository.GetAllPagenated(page, size).Where(x => !x.IsDelete);
             if (name != null)
                 category = category.Where(i => EF.Functions.Like(i.Name, $"%{name}%"));
 
-            return category;
+            return (category, count);
         }
+
     }
 }

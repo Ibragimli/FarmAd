@@ -23,8 +23,6 @@ namespace FarmAd.Application.Features.Queries.Role.GetRoleById
             {
                 Id = data.id,
                 Name = data.name
-
-
             };
         }
     }

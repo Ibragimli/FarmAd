@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Application.Repositories.City;
 using FarmAd.Application.Repositories.ProductFeature;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Identity;
+using FarmAd.Application.DTOs.Area;
 
 namespace FarmAd.Persistence.Service.Area
 {
@@ -25,87 +28,81 @@ namespace FarmAd.Persistence.Service.Area
             _cityWriteRepository = cityWriteRepository;
             _productFeatureReadRepository = productFeatureReadRepository;
         }
-        public async Task CityCreate(City City)
+        public async Task CityCreate(string name)
         {
-            City newCity = new City();
-            bool check = false;
-            if (City.Name != null)
-            {
-                if (await _cityReadRepository.IsExistAsync(x => x.Name == City.Name))
-                    throw new ItemAlreadyException("Bu adda şəhər mövcuddur!");
-
-                if (City.Name.Length > 30)
-                    throw new ItemFormatException("Şəhərin adı maksimum  uzunluğu 30 ola bilər");
-                newCity.Name = City.Name;
-                check = true;
-            }
-            else
+            if (string.IsNullOrEmpty(name))
                 throw new ItemNullException("Şəhərin adı boş ola bilməz");
+            if (await _cityReadRepository.IsExistAsync(x => x.Name == name))
+                throw new ItemAlreadyException("Bu adda şəhər mövcuddur!");
 
-            if (check)
+            if (name.Length > 30)
+                throw new ItemFormatException("Şəhərin adı maksimum  uzunluğu 30 ola bilər");
+
+
+            City newCity = new City
             {
-                await _cityWriteRepository.AddAsync(newCity);
-                await _cityWriteRepository.SaveAsync();
-            }
+                Name = name
+            };
+            await _cityWriteRepository.AddAsync(newCity);
+            await _cityWriteRepository.SaveAsync();
         }
 
-        public async Task CityEdit(City City)
+        public async Task CityEdit(CityUpdateDto cityUpdateDto)
         {
-            bool check = false;
-            var oldCity = await _cityReadRepository.GetAsync(x => x.Id == City.Id);
 
-            if (City.Name != null)
-            {
-                if (await _cityReadRepository.IsExistAsync(x => x.Name == City.Name))
-                    throw new ItemAlreadyException("Bu adda şəhər mövcuddur!");
+            if (string.IsNullOrEmpty(cityUpdateDto.Name))
+                throw new ItemNullException("Şəhərin adı boş ola bilməz");
+            if (await _cityReadRepository.IsExistAsync(x => x.Name == cityUpdateDto.Name))
+                throw new ItemAlreadyException("Bu adda şəhər mövcuddur!");
 
-                if (City.Name.Length > 30)
-                    throw new ItemFormatException("Şəhərin adının maksimum  uzunluğu 30 ola bilər");
-                if (City.Name != oldCity.Name)
-                {
-                    oldCity.Name = City.Name;
-                    check = true;
-                }
-            }
-            else
-                throw new ItemNullException("Şəhər adı boş ola bilməz");
+            var oldCity = await _cityReadRepository.GetAsync(x => x.Id == cityUpdateDto.Id);
 
-            if (check)
-            {
-                oldCity.ModifiedDate = DateTime.UtcNow.AddHours(4);
-                await _cityWriteRepository.SaveAsync();
-            }
+            if (oldCity == null)
+                throw new ItemNotFoundException("Şəhər tapılmadı!");
+
+            if (cityUpdateDto.Name.Length > 30)
+                throw new ItemFormatException("Şəhərin adının maksimum  uzunluğu 30 ola bilər");
+
+            if (cityUpdateDto.Name != oldCity.Name)
+                oldCity.Name = cityUpdateDto.Name;
+
+            oldCity.ModifiedDate = DateTime.UtcNow.AddHours(4);
+            await _cityWriteRepository.SaveAsync();
+
         }
 
         public async Task CityDelete(int id)
         {
             var oldCity = await _cityReadRepository.GetAsync(x => x.Id == id);
-            bool check = await _productFeatureReadRepository.IsExistAsync(x => x.CityId == id);
-            if (check)
+            if (oldCity == null)
+                throw new ItemNotFoundException("Şəhər tapılmadı!");
+
+            bool isUsedInProduct = await _productFeatureReadRepository.IsExistAsync(x => x.CityId == id);
+            if (isUsedInProduct)
                 throw new ItemUseException("Şəhər elanda istifadə olunur!!!");
 
             _cityWriteRepository.Remove(oldCity);
-
             await _cityWriteRepository.SaveAsync();
-
         }
 
 
 
         public async Task<City> GetCity(int id)
         {
-            var City = await _cityReadRepository.GetAsync(x => x.Id == id && !x.IsDelete);
-
-            return City;
+            var city = await _cityReadRepository.GetAsync(x => x.Id == id && !x.IsDelete);
+            if (city == null)
+                throw new ItemNotFoundException("Şəhər tapılmadı!");
+            return city;
         }
-        public IQueryable<City> GetCities(string name)
+        public (object, int) GetCities(string name, int page, int size)
         {
-            var City = _cityReadRepository.AsQueryable();
-            City = City.Where(x => !x.IsDelete);
-            if (name != null)
-                City = City.Where(i => EF.Functions.Like(i.Name, $"%{name}%"));
+            var query = _cityReadRepository.GetAll();
 
-            return City;
+            var cities = _cityReadRepository.GetAllPagenated(page, size).Where(x => !x.IsDelete);
+            if (!string.IsNullOrEmpty(name))
+                cities = cities.Where(i => EF.Functions.Like(i.Name, $"%{name}%"));
+            return (cities.Select(r => new { r.Id, r.Name }), query.Count());
+
         }
     }
 }

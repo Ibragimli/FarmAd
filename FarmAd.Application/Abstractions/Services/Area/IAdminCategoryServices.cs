@@ -1,4 +1,5 @@
-﻿using FarmAd.Domain.Entities;
+﻿using FarmAd.Application.DTOs.Area;
+using FarmAd.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +10,10 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface IAdminCategoryServices
     {
-        public IQueryable<Category> GetCategories(string name);
+        public (object, int) GetCategories(string name, int page, int size);
         public Task<Category> GetCategory(int id);
-        public Task CategoryCreate(Category category);
-
-        public Task CategoryEdit(Category category);
+        public Task CategoryCreate(CategoryCreateDto categoryCreateDto);
+        public Task CategoryEdit(CategoryUpdateDto categoryUpdateDto);
         public Task CategoryDelete(int id);
-
-
     }
 }

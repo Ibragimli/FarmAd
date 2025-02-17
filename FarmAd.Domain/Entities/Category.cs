@@ -13,6 +13,7 @@ namespace FarmAd.Domain.Entities
     {
         public string Name { get; set; }
         public string Image { get; set; }
+        public string ImagePath { get; set; }
 
         [NotMapped]
         public IFormFile CategoryImageFile { get; set; }
