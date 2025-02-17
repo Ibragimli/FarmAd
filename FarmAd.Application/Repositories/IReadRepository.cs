@@ -16,7 +16,7 @@ namespace FarmAd.Application.Repositories
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
         IQueryable<T> AsQueryable(params string[] includes);
 
-        IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true, params string[] includes);
+        IQueryable<T> GetAllPagenated(int pageIndex, int pageSize, bool tracking = true, params string[] includes);
         IQueryable<T> GetWhere(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
         Task<int> GetTotalCountAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);
         Task<T> GetSingleAsync(Expression<Func<T, bool>> method, bool tracking = true, params string[] includes);

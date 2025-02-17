@@ -1,10 +1,14 @@
 ﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Application.Consts;
+using FarmAd.Application.CustomAttributes;
 using FarmAd.Application.DTOs;
+using FarmAd.Application.Enums;
 using FarmAd.Application.Features.Commands.User.LoginAuthentication;
 using FarmAd.Application.Features.Commands.User.LoginUser;
 using FarmAd.Application.Features.Queries.User.GetAllUsers;
 using FarmAd.Domain.Entities.Identity;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +29,7 @@ namespace FarmAd.API.Controllers
         }
         // POST api/user/register
         [HttpPost("register")]
+        //[AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Create User", Menu = AuthorizeDefinationConstants.Users)]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto model)
         {
             var result = await _authService.CreateUserPostman(model);
@@ -34,8 +39,8 @@ namespace FarmAd.API.Controllers
 
             return BadRequest("sad");
         }
-
         [HttpGet("GetAllUsers")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get All Users", Menu = AuthorizeDefinationConstants.Users)]
         public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersCommandRequest request)
         {
             GetAllUsersCommandResponse response = new();
@@ -50,8 +55,8 @@ namespace FarmAd.API.Controllers
             }
             return Ok(response);
         }
-
         [HttpPost("login")]
+        //[AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Login", Menu = AuthorizeDefinationConstants.Users)]
         public async Task<IActionResult> Login([FromBody] LoginUserCommandRequest request)
         {
             LoginUserCommandResponse response = new();
@@ -67,6 +72,7 @@ namespace FarmAd.API.Controllers
             return Ok(response);
         }
         [HttpPost("LoginAuthentication")]
+        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Login Authentication", Menu = AuthorizeDefinationConstants.Users)]
         public async Task<IActionResult> LoginAuthentication([FromBody] LoginAuthenticationCommandRequest request)
         {
             LoginAuthenticationCommandResponse response = new();

@@ -1,4 +1,6 @@
 ﻿using FarmAd.Application.Exceptions;
+using FarmAd.Application.Repositories.Endpoint;
+using FarmAd.Domain.Entities;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
 using Microsoft.AspNetCore.Identity;
@@ -17,10 +19,14 @@ namespace FarmAd.Persistence.Services.User
     public class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEndpointReadRepository _endpointReadRepository;
+        private readonly SignInManager<AppUser> _signInManager;
 
-        public UserService(UserManager<AppUser> userManager)
+        public UserService(UserManager<AppUser> userManager, IEndpointReadRepository endpointReadRepository, SignInManager<AppUser> signInManager)
         {
             _userManager = userManager;
+            _endpointReadRepository = endpointReadRepository;
+            _signInManager = signInManager;
         }
         public async Task<List<AppUser>> GetAllUsersAsync(int page, int size)
         {
@@ -59,5 +65,54 @@ namespace FarmAd.Persistence.Services.User
             bool isExist = await _userManager.Users.AnyAsync(x => x.Id == id);
             return isExist;
         }
+        public int TotalUserCount => _userManager.Users.Count();
+
+        public async Task AssingRoleToUserAsync(string userId, string[] roles)
+        {
+            AppUser user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+                await _userManager.AddToRolesAsync(user, roles);
+            }
+
+        }
+        public async Task<string[]> GetRolesToUserAsync(string userIdOrUsername)
+        {
+            AppUser user = await _userManager.FindByIdAsync(userIdOrUsername);
+            if (user == null)
+                user = await _userManager.FindByNameAsync(userIdOrUsername);
+            if (user != null)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                return userRoles.ToArray();
+            }
+            return new string[] { };
+        }
+
+        public async Task<bool> HasRolePermissionToEndpointAsync(string username, string code)
+        {
+            var userRoles = await GetRolesToUserAsync(username);
+            if (!userRoles.Any())
+                return false;
+            Endpoint? endpoint = await _endpointReadRepository.Table.Include(e => e.Roles).FirstOrDefaultAsync(e => e.Code == code);
+            if (endpoint == null)
+                return false;
+
+            var endpointRoles = endpoint.Roles.Select(r => r.Name);
+            foreach (var userRole in userRoles)
+            {
+                foreach (var endpointRole in endpointRoles)
+                {
+                    if (userRole == endpointRole)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task SignOutUser() { await _signInManager.SignOutAsync(); }
     }
+
 }

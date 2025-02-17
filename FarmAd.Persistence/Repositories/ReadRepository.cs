@@ -48,7 +48,7 @@ namespace FarmAd.Persistence.Repositories
 
             return await query.ToListAsync();
         }
-        public IQueryable<T> GetAllPagenatedAsync(int pageIndex, int pageSize, bool tracking = true, params string[] includes)
+        public IQueryable<T> GetAllPagenated(int pageIndex, int pageSize, bool tracking = true, params string[] includes)
         {
             var query = _query(includes);
 
@@ -72,6 +72,7 @@ namespace FarmAd.Persistence.Repositories
             query = Table.AsQueryable();
             if (!tracking)
                 query = query.AsNoTracking();
+            query = query.Where(method);
             return await query.CountAsync();
         }
 

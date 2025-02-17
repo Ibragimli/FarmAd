@@ -40,6 +40,7 @@ using FarmAd.Persistence.Repositories.WishItem;
 using FarmAd.Persistence.Service.User;
 using FarmAd.Persistence.Services;
 using FarmAd.Persistence.Services.Configurations;
+using FarmAd.Persistence.Services.User;
 using MailKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

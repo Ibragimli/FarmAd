@@ -62,11 +62,14 @@ namespace FarmAd.Persistence.Service.User
         private async Task RareLimit(string username)
         {
             var timeLimit = DateTime.UtcNow.AddHours(4).AddMinutes(-5); // Şu andan 5 dakika öncesine kadar olanları al
-            var count = await _userAuthenticationReadRepository.GetTotalCountAsync(x => x.CreatedDate >= timeLimit && x.Username == username);
+            var count = await _userAuthenticationReadRepository.GetTotalCountAsync(
+                x => x.CreatedDate >= timeLimit && x.Username == username // Sadece belirli username'i kontrol et
+            );
 
-            if (count > 5)
-                throw new RareLimitException("5 dəqiqə ərzindəki sorğu limitini keçmisiz! Biraz gözləməyiniz xahiş olunur.");
+            if (count >= 5) // 5 veya daha fazla giriş denemesi olduysa hata fırlat
+                throw new RareLimitException("5 dəqiqə ərzində bu nömrə ilə çox cəhd etdiniz! Biraz gözləyin.");
         }
+
 
         public string CreateToken()
         {

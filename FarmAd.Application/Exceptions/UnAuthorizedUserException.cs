@@ -7,7 +7,7 @@ namespace FarmAd.Application.Exceptions
     public class UnauthorizedUserException : Exception
     {
 
-        public UnauthorizedUserException() : base("Uğursuz cəhd.Zəhmət olmasa yenidən daxil olun.")
+        public UnauthorizedUserException() : base("Token etibarsızdır! Zəhmət olmasa yenidən daxil olun.")
         {
         }
 

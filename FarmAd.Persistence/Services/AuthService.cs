@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
@@ -24,6 +27,7 @@ namespace FarmAd.Persistence.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<AppRole> _roleManager;
         private readonly IUserAuthenticationReadRepository _userAuthenticationReadRepository;
         private readonly IOTPService _oTPService;
         private readonly IUserAuthenticationWriteRepository _userAuthenticationWriteRepository;
@@ -32,9 +36,10 @@ namespace FarmAd.Persistence.Services
         private readonly IUserService _userService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(UserManager<AppUser> userManager, IUserAuthenticationReadRepository userAuthenticationReadRepository, IOTPService OTPService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler, IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public AuthService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IUserAuthenticationReadRepository userAuthenticationReadRepository, IOTPService OTPService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler, IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userAuthenticationReadRepository = userAuthenticationReadRepository;
             _oTPService = OTPService;
             _userAuthenticationWriteRepository = userAuthenticationWriteRepository;
@@ -45,31 +50,50 @@ namespace FarmAd.Persistence.Services
         }
         public async Task<bool> CreateUserPostman(RegisterUserDto model)
         {
-            var user = new AppUser
-            {
-                UserName = model.Username,
-                Fullname = model.Fullname,
-                IsAdmin = false,
-                Balance = 0
+            //string[] roles = { "User", "Admin" };
 
-            };
-            var code = _oTPService.CodeCreate();
-            var result = await _userManager.CreateAsync(user, code);
+            //foreach (var role in roles)
+            //{
+            //    if (!await _roleManager.RoleExistsAsync(role))
+            //    {
+            //        var newRole = new AppRole { Name = role }; // AppRole obyekti yaradılır
+            //        newRole.Id = Guid.NewGuid().ToString();
+            //        var result = await _roleManager.CreateAsync(newRole); // Obyekt göndərilir
 
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                {
-                    throw new Exception(error.Description);
-                }
-            }
-            await _userManager.AddToRoleAsync(user, "User");
-            await _userAuthenticationWriteRepository.SaveAsync();
+            //        if (!result.Succeeded)
+            //        {
+            //            foreach (var error in result.Errors)
+            //                throw new Exception(error.Description);
+            //        }
+            //    }
+            //}
+            //var user = new AppUser
+            //{
+            //    UserName = model.Username,
+            //    Fullname = model.Fullname,
+            //    IsAdmin = false,
+            //    Balance = 0
+
+            //};
+            //var code = _oTPService.CodeCreate();
+            //var result = await _userManager.CreateAsync(user, code);
+
+            //if (!result.Succeeded)
+            //{
+            //    foreach (var error in result.Errors)
+            //    {
+            //        throw new Exception(error.Description);
+            //    }
+            //}
+            //await _userManager.AddToRoleAsync(user, "User");
+            //await _userAuthenticationWriteRepository.SaveAsync();
             return true;
         }
 
         public async Task<bool> CreateUser(string username)
         {
+
+
             var user = new AppUser
             {
                 UserName = username,
@@ -79,7 +103,7 @@ namespace FarmAd.Persistence.Services
 
             };
             var result = await _userManager.CreateAsync(user);
-
+            await _userAuthenticationWriteRepository.SaveAsync();
             if (!result.Succeeded)
                 foreach (var error in result.Errors)
                     throw new Exception(error.Description);
@@ -88,7 +112,6 @@ namespace FarmAd.Persistence.Services
             await _userAuthenticationWriteRepository.SaveAsync();
             return true;
         }
-
 
         public async Task<List<AllUserDto>> GetAllUser()
         {
@@ -111,29 +134,41 @@ namespace FarmAd.Persistence.Services
 
         public async Task<string> Login(string username)
         {
-            bool userExist = await _userManager.Users.AnyAsync(x => x.UserName == username);
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                await _signInManager.SignOutAsync();
+
+            PhoneNumberHelper.PhoneNumberValidation(username);
+            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
+            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
+
+            bool userExist = await _userManager.Users.AnyAsync(x => x.UserName == newUsername);
             if (!userExist)
-                await CreateUser(username);
+                await CreateUser(newUsername);
 
             var code = _oTPService.CodeCreate();
-            var user = await _userManager.FindByNameAsync(username);
-            var auth = await _oTPService.CreateAuthentication(code, username);
-            Token token = _tokenHandler.CreateAccesToken(10, user);
+            var user = await _userManager.FindByNameAsync(newUsername);
+            var auth = await _oTPService.CreateAuthentication(code, newUsername);
+            Token token = _tokenHandler.CreateAccesToken(5, user);
+            await _signInManager.SignInAsync(user, isPersistent: false);
             return token.AccesToken;
         }
 
         public async Task<Token> LoginAuthentication(string username, string code, string token)
         {
+            PhoneNumberHelper.PhoneNumberValidation(username);
+            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
+            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
+
             if (!_tokenHandler.ValidateToken(token))
                 throw new UnauthorizedUserException();
 
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-            AppUser user = await _userManager.FindByNameAsync(username);
+            AppUser user = await _userManager.FindByNameAsync(newUsername);
             if (user == null)
                 throw new NotFoundUserException();
 
             var authentication = await _userAuthenticationReadRepository
-                .GetAsync(x => x.IsDisabled == false && x.Username == username && x.Code == code);
+                .GetAsync(x => x.IsDisabled == false && x.Username == newUsername && x.Code == code);
 
             if (authentication == null)
                 throw new AuthenticationCodeException("Kod yanlışdır!");
@@ -149,103 +184,10 @@ namespace FarmAd.Persistence.Services
             Token newToken = _tokenHandler.CreateAccesToken(10, user);
 
             return newToken;
+            //string name = _httpContextAccessor.HttpContext.User.Identity.Name;
+            //return name;
         }
 
-        //public async Task<UserAuthentication> LoginAuthentication(string code, string phoneNumber, string token)
-        //{
-        //    var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-        //    var authentication = await _unitOfWork.UserAuthenticationRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Token == token);
-        //    var existAuthentication = await _unitOfWork.UserAuthenticationRepository.GetAsync(x => x.IsDisabled == false && x.Token == token);
-        //    if (existAuthentication == null)
-        //        throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-        //    if (existAuthentication.ExpirationDate.TimeOfDay < now)
-        //    {
-        //        existAuthentication.IsDisabled = true;
-        //        await _unitOfWork.CommitAsync();
-        //        throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-        //    }
-
-        //    if (authentication == null)
-        //    {
-        //        if (existAuthentication != null)
-        //        {
-        //            if (existAuthentication.Count > 1)
-        //                existAuthentication.Count -= 1;
-        //            else
-        //            {
-        //                existAuthentication.IsDisabled = true;
-        //            }
-        //            await _unitOfWork.CommitAsync();
-        //        }
-        //        throw new AuthenticationCodeException("Kod yanlışdır!");
-        //    }
-        //    return authentication;
-        //}
-
-        //public async Task UserCreate(string phoneNumber, string code)
-        //{
-        //    AppUser newUser = new AppUser
-        //    {
-        //        UserName = phoneNumber,
-        //        PhoneNumber = phoneNumber,
-        //        IsAdmin = false,
-        //        Balance = 0,
-        //    };
-        //    var result = await _userManager.CreateAsync(newUser, code);
-        //    if (!result.Succeeded)
-        //    {
-        //        foreach (var error in result.Errors)
-        //        {
-        //            throw new Exception(error.Description);
-        //        }
-        //    }
-        //    await _userManager.AddToRoleAsync(newUser, "User");
-        //    await _unitOfWork.CommitAsync();
-        //}
-
-        //public async Task UserLogin(string phoneNumber, string code, UserAuthentication authentication)
-        //{
-        //    var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-        //    if (authentication.ExpirationDate.TimeOfDay < now)
-        //        throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-
-        //    var UserExists = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == phoneNumber && x.IsAdmin == false);
-        //    if (UserExists == null)
-        //        throw new NotFoundException("NotFound");
-
-        //    var result = await _signInManager.PasswordSignInAsync(UserExists, code, false, false);
-        //    if (!result.Succeeded)
-        //        throw new NotFoundException("NotFound");
-
-        //    authentication.IsDisabled = true;
-        //    await _unitOfWork.CommitAsync();
-
-
-        //}
-
-        //public async Task UserResetPassword(string phoneNumber, string code)
-        //{
-        //    var UserExists = await _userManager.Users.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
-        //    var tokenResetPassword = await _userManager.GeneratePasswordResetTokenAsync(UserExists);
-
-        //    if (UserExists == null || !(await _userManager.VerifyUserTokenAsync(UserExists, _userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", tokenResetPassword)))
-        //    {
-        //        throw new NotFoundException("NotFound");
-        //    }
-
-        //    var result = await _userManager.ResetPasswordAsync(UserExists, tokenResetPassword, code);
-
-        //    if (!result.Succeeded)
-        //    {
-        //        foreach (var error in result.Errors)
-        //        {
-        //            throw new Exception(error.Description);
-        //        }
-        //    }
-
-        //}
-
-        ///
         public async Task PasswordResetAsync(string username)
         {
             AppUser user = await _userManager.FindByNameAsync(username);
@@ -286,6 +228,21 @@ namespace FarmAd.Persistence.Services
             return false;
         }
 
-       
+        public async Task<bool> RareLimitAllDelete(bool isDisabled = true)
+        {
+            var authentications = await _userAuthenticationReadRepository.GetAllAsync(x => !x.IsDelete);
+            foreach (var item in authentications)
+            {
+                _userAuthenticationWriteRepository.Remove(item);
+            }
+            await _userAuthenticationWriteRepository.SaveAsync();
+            return true;
+        }
+
+        public async Task<List<UserAuthentication>> GetAllUserAuthentication(int page, int size)
+        {
+            var userAuthentications = await _userAuthenticationReadRepository.GetAllPagenated(page, size).ToListAsync();
+            return userAuthentications;
+        }
     }
 }

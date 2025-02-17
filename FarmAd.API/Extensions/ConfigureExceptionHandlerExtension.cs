@@ -19,21 +19,16 @@ namespace FarmAd.API.Extensions
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null)
                     {
-                        var exception = contextFeature.Error;
-                        logger.LogError(exception, "An error occurred: {Message}", exception.Message);
+                        logger.LogError(contextFeature.Error.Message);
 
-                        var response = new
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new
                         {
                             StatusCode = context.Response.StatusCode,
-                            Message = exception.Message,
-                            Title = "Error received!",
-                            ExceptionType = exception.GetType().ToString()  // Optional, adds exception type info
-                        };
-
-                        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                            Message = contextFeature.Error.Message,
+                            Title = "Xəta baş verdi!"
+                        })); ;
                     }
                 });
-
             });
         }
     }

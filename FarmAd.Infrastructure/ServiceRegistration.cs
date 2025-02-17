@@ -27,7 +27,6 @@ namespace FarmAd.Infrastructure
             services.AddScoped<IEmailServices, EmailServices>();
             services.AddScoped<ITokenHandler, TokenHandler>();
             services.AddScoped<IImageManagerService, ImageManagerService>();
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISmsSenderServices, SmsSenderServices>();
             services.AddScoped<IApplicationService, ApplicationService>(); // Eğer eksikse
 

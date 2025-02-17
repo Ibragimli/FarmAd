@@ -1,4 +1,5 @@
 ﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Domain.Entities.Identity;
 using MediatR;
 using System;
 using System.Collections.Generic;

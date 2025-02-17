@@ -26,6 +26,7 @@ namespace FarmAd.Application.Features.Commands.User.LoginAuthentication
             {
                 Succes = true,
                 Token = token,
+                //Username = token,
                 Message = "true",
             };
         }

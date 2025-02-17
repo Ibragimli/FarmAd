@@ -1,5 +1,6 @@
 ﻿using FarmAd.Application.Abstractions.Tokens;
 using FarmAd.Application.DTOs;
+using FarmAd.Application.Exceptions;
 using FarmAd.Domain.Entities.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -22,10 +23,8 @@ namespace FarmAd.Infrastructure.Service.Tokens
         public bool ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-
             var key = Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]);
 
-            // Token doğrulama parametreleri
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -35,18 +34,37 @@ namespace FarmAd.Infrastructure.Service.Tokens
                 ValidIssuer = _configuration["Token:Issuer"],
                 ValidAudience = _configuration["Token:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ClockSkew = TimeSpan.Zero // Token geçerlilik süresi toleransını sıfırlıyoruz
+                ClockSkew = TimeSpan.Zero // Token üçün güzəşt müddətini sıfırlayırıq
             };
 
-            // Token'ı doğrula
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
+            try
+            {
+                // Token'ı doğrula
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
 
-            // Eğer burada bir exception yakalanmazsa, token geçerlidir
-            if (validatedToken != null)
-                return true;
-            // Hatalı token veya geçersiz token
+                if (validatedToken != null)
+                    return true;
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                throw new ExpirationDateException("Token-in müddəti bitmişdir! Yenidən giriş edin.");
+            }
+            catch (SecurityTokenValidationException)
+            {
+                throw new UnauthorizedUserException();
+            }
+            catch (ArgumentException)
+            {
+                throw new Exception("Token boş və ya yanlışdır! Xahiş edirik, düzgün məlumat daxil edin.");
+            }
+            catch (Exception)
+            {
+                throw new Exception("Token yoxlanışı zamanı naməlum xəta baş verdi!");
+            }
+
             return false;
         }
+
 
         public Token CreateAccesToken(int second, AppUser user)
         {
@@ -54,7 +72,6 @@ namespace FarmAd.Infrastructure.Service.Tokens
             {
                new Claim(ClaimTypes.Name, user.UserName),
                new Claim(ClaimTypes.NameIdentifier, user.Id),
-
             };
 
             Token token = new Token();
