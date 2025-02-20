@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Queries.City.GetCities
+namespace FarmAd.Application.Features.Queries.Settings.GetSettings
 {
-    public class GetCitiesQueriesResponse
+    public class GetSettingsQueriesResponse
     {
         public object Datas { get; set; }
         public int TotalCount { get; set; }

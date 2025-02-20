@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Queries.City.GetCities
+namespace FarmAd.Application.Features.Queries.Settings.GetSettings
 {
-    public class GetCitiesQueriesRequest : IRequest<GetCitiesQueriesResponse>
+    public class GetSettingsQueriesRequest : IRequest<GetSettingsQueriesResponse>
     {
-        public string? Name { get; set; }
+        public string Search { get; set; }
+
         public int Page { get; set; } = 0;
         public int Size { get; set; } = 5;
     }

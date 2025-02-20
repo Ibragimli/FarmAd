@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Queries.Role.GetRoles
+namespace FarmAd.Application.Features.Queries.City.GetCities
 {
     public class GetCitiesQueriesHandler : IRequestHandler<GetCitiesQueriesRequest, GetCitiesQueriesResponse>
     {

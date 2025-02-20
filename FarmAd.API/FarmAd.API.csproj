@@ -32,6 +32,7 @@
   <ItemGroup>
     <Folder Include="logs\" />
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\files\categories\" />
     <Folder Include="wwwroot\files\products\" />
   </ItemGroup>
 

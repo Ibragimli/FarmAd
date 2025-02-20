@@ -6,14 +6,14 @@ using System.Text;
 
 namespace FarmAd.Application.DTOs.Area
 {
-    public class SettingEditDto
+    public class SettingUpdateDto
     {
         public string Value { get; set; }
         public string Key { get; set; }
         public IFormFile KeyImageFile { get; set; }
         public int Id { get; set; }
 
-        public class CreatePostDtoValidator : AbstractValidator<SettingEditDto>
+        public class CreatePostDtoValidator : AbstractValidator<SettingUpdateDto>
         {
             public CreatePostDtoValidator()
             {

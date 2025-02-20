@@ -9,7 +9,7 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface ISettingIndexServices
     {
-        IQueryable<Setting> SearchCheck(string search);
+        public (object, int) GetAll(string search, int page, int size);
 
     }
 }

@@ -41,7 +41,7 @@ namespace FarmAd.Persistence.Service.Area
             if (categoryCreateDto.Image != null)
                 _manageImageHelper.ValidateProduct(categoryCreateDto.Image);
 
-            if (categoryCreateDto.Name != null)
+            if (categoryCreateDto.Name == null)
                 throw new ItemNullException("Kategoriya boş ola bilməz");
 
             if (categoryCreateDto.Name.Length > 50)

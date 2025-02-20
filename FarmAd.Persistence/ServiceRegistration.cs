@@ -104,6 +104,9 @@ namespace FarmAd.Persistence
             services.AddScoped<IProductCreateServices, ProductCreateServices>();
             services.AddScoped<IAdminCityServices, AdminCityServices>();
             services.AddScoped<IAdminCategoryServices, AdminCategoryServices>();
+            services.AddScoped<ISettingIndexServices, SettingIndexServices>();
+            services.AddScoped<ISettingEditServices, SettingEditServices>();
+            services.AddScoped<IAdminSubCategoryServices, AdminSubCategoryServices>();
 
 
 

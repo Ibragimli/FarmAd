@@ -45,7 +45,7 @@ namespace FarmAd.API.Area.Manage.Controllers
 
         [HttpPost("CreateCategory")]
         //[AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Create Category", Menu = AuthorizeDefinationConstants.Categories)]
-        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommandRequest request)
+        public async Task<IActionResult> CreateCategory([FromForm] CreateCategoryCommandRequest request)
         {
             CreateCategoryCommandResponse response = await _mediator.Send(request);
             return Ok(response);
@@ -53,7 +53,7 @@ namespace FarmAd.API.Area.Manage.Controllers
 
         [HttpPut("UpdateCategory")]
         //[AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "Update Category", Menu = AuthorizeDefinationConstants.Categories)]
-        public async Task<IActionResult> UpdateCategory([FromBody] UpdateCategoryCommandRequest request)
+        public async Task<IActionResult> UpdateCategory([FromForm] UpdateCategoryCommandRequest request)
         {
             UpdateCategoryCommandResponse response = await _mediator.Send(request);
             return Ok(response);

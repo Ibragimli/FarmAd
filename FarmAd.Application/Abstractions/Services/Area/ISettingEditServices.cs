@@ -8,8 +8,7 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface ISettingEditServices
     {
-        Task SettingEdit(SettingEditDto SettingEdit);
-        Task<SettingEditDto> IsExists(int id);
-        Task<SettingEditDto> GetSearch(int Id);
+        Task SettingEdit(SettingUpdateDto SettingEdit);
+
     }
 }
