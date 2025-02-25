@@ -34,8 +34,8 @@ namespace FarmAd.Persistence.Services.User
         public async Task<UserAuthentication> LoginAuthentication(string code, string phoneNumber, string token)
         {
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code );
-            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false );
+            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code);
+            var existAuthentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false);
             if (existAuthentication == null)
                 throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
             if (existAuthentication.ExpirationDate.TimeOfDay < now)
@@ -62,29 +62,6 @@ namespace FarmAd.Persistence.Services.User
             }
             return authentication;
         }
-
-        public async Task UserCreate(string phoneNumber, string code)
-        {
-            AppUser newUser = new AppUser
-            {
-                UserName = phoneNumber,
-                PhoneNumber = phoneNumber,
-                IsAdmin = false,
-                Balance = 0,
-            };
-            var result = await _userManager.CreateAsync(newUser, code);
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                {
-                    throw new Exception(error.Description);
-                }
-            }
-            await _userManager.AddToRoleAsync(newUser, "User");
-            await _userAuthenticationWriteRepository.SaveAsync();
-
-        }
-
         public async Task UserLogin(string phoneNumber, string code, UserAuthentication authentication)
         {
             var now = DateTime.UtcNow.AddHours(4).TimeOfDay;

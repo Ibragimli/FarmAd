@@ -24,6 +24,8 @@ using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Infrastructure.Service.User;
 using FarmAd.Application.Abstractions.Storage;
 using AutoMapper;
+using FarmAd.Application.Repositories.SubCategory;
+using FarmAd.Application.Repositories.City;
 
 namespace FarmAd.Persistence.Services.User
 {
@@ -31,6 +33,8 @@ namespace FarmAd.Persistence.Services.User
     public class ProductCreateServices : IProductCreateServices
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly ICityReadRepository _cityReadRepository;
+        private readonly ISubCategoryReadRepository _subCategoryReadRepository;
         private readonly IMapper _mapper;
         private readonly IStorageService _storageService;
         private readonly IProductUserIdWriteRepository _productUserIdWriteRepository;
@@ -44,9 +48,11 @@ namespace FarmAd.Persistence.Services.User
         private readonly IEmailServices _emailServices;
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public ProductCreateServices(UserManager<AppUser> userManager, IMapper mapper, IStorageService storageService, IProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
+        public ProductCreateServices(UserManager<AppUser> userManager, ICityReadRepository cityReadRepository, ISubCategoryReadRepository subCategoryReadRepository, IMapper mapper, IStorageService storageService, IProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
         {
             _userManager = userManager;
+            _cityReadRepository = cityReadRepository;
+            _subCategoryReadRepository = subCategoryReadRepository;
             _mapper = mapper;
             _storageService = storageService;
             _productUserIdWriteRepository = productUserIdWriteRepository;
@@ -60,7 +66,7 @@ namespace FarmAd.Persistence.Services.User
             _emailServices = emailServices;
             _contextAccessor = contextAccessor;
         }
-        public async Task CreateImageFormFileAsync(List<IFormFile> imageFiles, int productId)
+        public async Task CreateImagesAsync(List<IFormFile> imageFiles, int productId)
         {
             List<ProductImage> productImages = new();
 
@@ -131,6 +137,8 @@ namespace FarmAd.Persistence.Services.User
 
         public async Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto)
         {
+            await ValidateProductCreateDto(ProductDto); // ✅ Doğrulamaları merkezi olarak yap
+
             var productFeature = _mapper.Map<ProductFeature>(ProductDto);
             productFeature.ProductStatus = ProductStatus.Waiting;
             //ProductFeature features = new ProductFeature
@@ -155,9 +163,52 @@ namespace FarmAd.Persistence.Services.User
             //    IsDelete = false,
 
             //};
-            await _productFeatureWriteRepository.AddAsync(productFeature);
-            await _productFeatureWriteRepository.SaveAsync();
+
+
+
+            try
+            {
+                await _productFeatureWriteRepository.AddAsync(productFeature);
+                await _productFeatureWriteRepository.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Məlumat saxlanarkən xəta baş verdi: {ex.InnerException?.Message ?? ex.Message}");
+            }
+
+            //await _productFeatureWriteRepository.AddAsync(productFeature);
+            //await _productFeatureWriteRepository.SaveAsync();
             return productFeature;
+        }
+        private async Task ValidateProductCreateDto(ProductCreateDto productDto)
+        {
+            if (productDto == null)
+                throw new ArgumentNullException(nameof(productDto), "Elan məlumatları göndərilməlidir!");
+
+            if (productDto.SubCategoryId <= 0)
+                throw new ItemNullException("Alt kategoriya hissəsi boş olmamalıdır!");
+
+            bool subCategoryExists = await _subCategoryReadRepository.IsExistAsync(x => x.Id == productDto.SubCategoryId);
+            if (!subCategoryExists)
+                throw new ItemNotFoundException("Seçtiyiniz altkategoriya mövcud deyil!");
+
+            if (!await _cityReadRepository.IsExistAsync(x => x.Id == productDto.CityId))
+                throw new ItemNullException("Göstərilən CityId mövcud deyil!");
+            if (string.IsNullOrWhiteSpace(productDto.Name))
+                throw new ItemNullException("Elanın adı boş ola bilməz!");
+
+
+            if (string.IsNullOrWhiteSpace(productDto.Name) || productDto.Name.Length < 3)
+                throw new ItemFormatException("Elanın adı minimum 3 simvol olmalıdır!");
+
+            if (productDto.Price <= 0)
+                throw new ItemFormatException("Qiymət 0-dan çox olmalıdır!");
+
+            if (productDto.CityId <= 0)
+                throw new ItemNullException("Şəhər seçilməlidir!");
+
+            if (string.IsNullOrWhiteSpace(productDto.Describe))
+                throw new ItemNullException("Elan təsviri boş ola bilməz!");
         }
 
         public async Task<Product> CreateProduct(ProductFeature features)
@@ -166,8 +217,15 @@ namespace FarmAd.Persistence.Services.User
             {
                 ProductFeatureId = features.Id,
             };
-            await _productWriteRepository.AddAsync(Product);
-            await _productWriteRepository.SaveAsync();
+            try
+            {
+                await _productWriteRepository.AddAsync(Product);
+                await _productWriteRepository.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Məlumat saxlanarkən xəta baş verdi: {ex.InnerException?.Message ?? ex.Message}");
+            }
             return Product;
         }
 
@@ -200,12 +258,13 @@ namespace FarmAd.Persistence.Services.User
 
         public async Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, List<string> images)
         {
-            var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
+            TimeSpan now = DateTime.UtcNow.AddHours(4).TimeOfDay;
 
-            var authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
+            UserAuthentication authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
             if (authentication == null)
-                throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
+                throw new ExpirationDateException("Kod yanlışdır! Təkrar giriş edin");
 
+            //Kodun müddəti bitmişdir
             if (authentication.ExpirationDate.TimeOfDay < now)
             {
                 foreach (var image in images)
@@ -217,7 +276,6 @@ namespace FarmAd.Persistence.Services.User
                 _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
                 await _userAuthenticationWriteRepository.SaveAsync();
                 throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-
             }
 
             //Kod dogrulugunun yoxlanilmasi, təkrar yoxlama limiti
@@ -242,7 +300,6 @@ namespace FarmAd.Persistence.Services.User
             }
             return authentication;
         }
-
         public List<string> GetImageFilesCookie()
         {
             List<string> images = new List<string>();
@@ -254,47 +311,15 @@ namespace FarmAd.Persistence.Services.User
                 throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
             return images;
         }
-        public async Task<AppUser> CreateNewUser(string code, string phoneNumber, string email, string fullname)
-        {
-            AppUser newUser = new AppUser();
-            //hesab yaradmaq
-
-            var UserExists = await _userService.GetAsync(x => x.PhoneNumber == phoneNumber);
-            if (UserExists == null)
-            {
-                newUser = new AppUser
-                {
-                    UserName = phoneNumber,
-                    PhoneNumber = phoneNumber,
-                    IsAdmin = false,
-                    Balance = 0,
-                    Email = email,
-                    Fullname = fullname,
-                };
-                var result = await _userManager.CreateAsync(newUser, code);
-                if (!result.Succeeded)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        throw new Exception(error.Description);
-                    }
-                }
-                await _userManager.AddToRoleAsync(newUser, "User");
-                await _userAuthenticationWriteRepository.SaveAsync();
-                return newUser;
-
-            }
-            return UserExists;
-            //hesab yaradmaq
-        }
-        public async Task CreateProductUserId(string userId, int ProductId, AppUser user)
+    
+        public async Task CreateProductUserId(string userId, int ProductId)
         {
             ProductUserId ProductUserId = new ProductUserId();
 
             //Product user elaqesi
             ProductUserId = new ProductUserId
             {
-                AppUserId = user.Id,
+                AppUserId = userId,
                 ProductId = ProductId,
             };
             await _productUserIdWriteRepository.AddAsync(ProductUserId);
@@ -307,6 +332,7 @@ namespace FarmAd.Persistence.Services.User
             _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
             await _userAuthenticationWriteRepository.SaveAsync();
         }
+
 
     }
 }

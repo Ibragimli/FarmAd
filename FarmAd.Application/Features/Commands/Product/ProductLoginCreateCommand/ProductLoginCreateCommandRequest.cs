@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
 {
-    public class ProductCreateCommandRequest : IRequest<ProductCreateCommandResponse>
+    public class ProductLoginCreateCommandRequest : IRequest<ProductLoginCreateCommandResponse>
     {
         public ProductCreateDto ProductCreateDto { get; set; }
 

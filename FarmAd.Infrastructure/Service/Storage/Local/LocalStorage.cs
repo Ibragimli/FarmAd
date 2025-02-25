@@ -17,7 +17,7 @@ namespace FarmAd.Infrastructure.Service.Storage.Local
                 => File.Exists($"{path}\\{fileName}");
 
         public async Task DeleteAsync(string path, string fileName)
-                => File.Delete($"{path}\\{fileName}");
+           => _fileManager.Delete(path, fileName);
 
 
         public List<string> GetFiles(string path)

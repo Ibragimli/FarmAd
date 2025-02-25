@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FarmAd.Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250211164040_addmig1")]
-    partial class addmig1
+    [Migration("20250222112549_addmig2")]
+    partial class addmig2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace FarmAd.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AppRoleEndpoint", b =>
+                {
+                    b.Property<int>("EndpointsId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RolesId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("EndpointsId", "RolesId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("AppRoleEndpoint");
+                });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.Category", b =>
                 {
@@ -37,6 +52,10 @@ namespace FarmAd.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -128,6 +147,68 @@ namespace FarmAd.Persistence.Migrations
                     b.ToTable("ContactUs");
                 });
 
+            modelBuilder.Entity("FarmAd.Domain.Entities.Endpoint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Definition")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HttpType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MenuId");
+
+                    b.ToTable("Endpoint");
+                });
+
+            modelBuilder.Entity("FarmAd.Domain.Entities.Identity.AppRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppRoles");
+                });
+
             modelBuilder.Entity("FarmAd.Domain.Entities.ImageSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -158,6 +239,32 @@ namespace FarmAd.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ImageSettings");
+                });
+
+            modelBuilder.Entity("FarmAd.Domain.Entities.Menu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Menu");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.Payment", b =>
@@ -222,25 +329,25 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<int>("ProductFeatureId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductFeaturesCityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductFeaturesSubCategoryId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductFeaturesCityId", "ProductFeaturesSubCategoryId");
+                    b.HasIndex("ProductFeatureId");
 
                     b.ToTable("Products");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductFeature", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SubCategoryId")
+                    b.Property<int?>("CityId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
@@ -267,9 +374,6 @@ namespace FarmAd.Persistence.Migrations
 
                     b.Property<DateTime>("ExpirationDateVip")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -311,32 +415,41 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<int>("ProductStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("SubCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubCategoryId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
 
                     b.Property<int>("WishCount")
                         .HasColumnType("int");
 
-                    b.HasKey("CityId", "SubCategoryId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("CityId");
+
+                    b.HasIndex("CityId1");
 
                     b.HasIndex("SubCategoryId");
+
+                    b.HasIndex("SubCategoryId1");
 
                     b.ToTable("ProductFeatures");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductImage", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<string>("Image")
                         .IsRequired()
@@ -352,10 +465,19 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ProductId1")
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.HasKey("ProductId");
+                    b.Property<int?>("ProductId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("ProductId1");
 
@@ -364,17 +486,18 @@ namespace FarmAd.Persistence.Migrations
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductUserId", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("AppUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -382,9 +505,14 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ProductId", "AppUserId");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductUserIds");
                 });
@@ -430,6 +558,9 @@ namespace FarmAd.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -557,17 +688,18 @@ namespace FarmAd.Persistence.Migrations
 
             modelBuilder.Entity("FarmAd.Domain.Entities.WishItem", b =>
                 {
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -575,7 +707,12 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("AppUserId", "ProductId");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("ProductId");
 
@@ -811,6 +948,32 @@ namespace FarmAd.Persistence.Migrations
                     b.HasDiscriminator().HasValue("AppUser");
                 });
 
+            modelBuilder.Entity("AppRoleEndpoint", b =>
+                {
+                    b.HasOne("FarmAd.Domain.Entities.Endpoint", null)
+                        .WithMany()
+                        .HasForeignKey("EndpointsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FarmAd.Domain.Entities.Identity.AppRole", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FarmAd.Domain.Entities.Endpoint", b =>
+                {
+                    b.HasOne("FarmAd.Domain.Entities.Menu", "Menu")
+                        .WithMany("Endpoints")
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Menu");
+                });
+
             modelBuilder.Entity("FarmAd.Domain.Entities.Payment", b =>
                 {
                     b.HasOne("FarmAd.Domain.Entities.Identity.AppUser", "AppUser")
@@ -834,7 +997,7 @@ namespace FarmAd.Persistence.Migrations
                 {
                     b.HasOne("FarmAd.Domain.Entities.ProductFeature", "ProductFeatures")
                         .WithMany("Products")
-                        .HasForeignKey("ProductFeaturesCityId", "ProductFeaturesSubCategoryId")
+                        .HasForeignKey("ProductFeatureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -844,16 +1007,24 @@ namespace FarmAd.Persistence.Migrations
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductFeature", b =>
                 {
                     b.HasOne("FarmAd.Domain.Entities.City", "City")
-                        .WithMany("ProductFeatures")
+                        .WithMany()
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FarmAd.Domain.Entities.SubCategory", "SubCategory")
+                    b.HasOne("FarmAd.Domain.Entities.City", null)
                         .WithMany("ProductFeatures")
+                        .HasForeignKey("CityId1");
+
+                    b.HasOne("FarmAd.Domain.Entities.SubCategory", "SubCategory")
+                        .WithMany()
                         .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("FarmAd.Domain.Entities.SubCategory", null)
+                        .WithMany("ProductFeatures")
+                        .HasForeignKey("SubCategoryId1");
 
                     b.Navigation("City");
 
@@ -863,10 +1034,14 @@ namespace FarmAd.Persistence.Migrations
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductImage", b =>
                 {
                     b.HasOne("FarmAd.Domain.Entities.Product", "Product")
-                        .WithMany("ProductImages")
-                        .HasForeignKey("ProductId1")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("FarmAd.Domain.Entities.Product", null)
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId1");
 
                     b.Navigation("Product");
                 });
@@ -979,6 +1154,11 @@ namespace FarmAd.Persistence.Migrations
             modelBuilder.Entity("FarmAd.Domain.Entities.City", b =>
                 {
                     b.Navigation("ProductFeatures");
+                });
+
+            modelBuilder.Entity("FarmAd.Domain.Entities.Menu", b =>
+                {
+                    b.Navigation("Endpoints");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.Product", b =>

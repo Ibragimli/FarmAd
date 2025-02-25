@@ -11,11 +11,15 @@ namespace FarmAd.Infrastructure.Service.User
     public interface IUserService
     {
         Task<List<AppUser>> GetAllUsersAsync(int page, int size);
+        Task<AppUser> CreateNewUser(string phoneNumber, string email, string fullname);
 
         Task<AppUser> GetAsync(Expression<Func<AppUser, bool>> predicate);
         Task<AppUser> GetUserAsync(string UsernameOrEmail);
         Task<AppUser> GetUserIdAsync(string id);
         Task<bool> IsExistAsync(string id);
+        bool IsIdendity(string username);
+        string IdentityUser();
+
         Task SignOutUser();
         Task AssingRoleToUserAsync(string userId, string[] roles);
         int TotalUserCount { get; }

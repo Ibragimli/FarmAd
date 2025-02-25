@@ -12,12 +12,14 @@ using FarmAd.Application.Repositories.ProductImage;
 using FarmAd.Application.Repositories.Payment;
 using FarmAd.Application.Repositories.WishItem;
 using FarmAd.Application.Repositories.ProductFeature;
+using FarmAd.Application.Abstractions.Storage;
 
 namespace FarmAd.Persistence.Service.Area
 {
     public class ProductDeleteServices : IProductDeleteServices
     {
         private readonly IProductReadRepository _productReadRepository;
+        private readonly IStorageService _storageService;
         private readonly IWishItemWriteRepository _wishItemWriteRepository;
         private readonly IProductWriteRepository _productWriteRepository;
         private readonly IProductFeatureWriteRepository _productFeatureWriteRepository;
@@ -29,11 +31,11 @@ namespace FarmAd.Persistence.Service.Area
         private readonly IPaymentReadRepository _paymentReadRepository;
         private readonly IWishItemReadRepository _wishItemReadRepository;
         private readonly IProductImageReadRepository _productImageReadRepository;
-        private readonly IImageManagerService _manageImageHelper;
 
-        public ProductDeleteServices(IProductReadRepository productReadRepository, IWishItemWriteRepository wishItemWriteRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductUserIdWriteRepository productUserIdWriteRepository, IPaymentWriteRepository paymentWriteRepository, IProductImageWriteRepository productImageWriteRepository, IProductUserIdReadRepository productUserIdReadRepository, IProductFeatureReadRepository productFeatureReadRepository, IPaymentReadRepository paymentReadRepository, IWishItemReadRepository wishItemReadRepository, IProductImageReadRepository productImageReadRepository, IImageManagerService manageImageHelper)
+        public ProductDeleteServices(IProductReadRepository productReadRepository, IStorageService storageService, IWishItemWriteRepository wishItemWriteRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductUserIdWriteRepository productUserIdWriteRepository, IPaymentWriteRepository paymentWriteRepository, IProductImageWriteRepository productImageWriteRepository, IProductUserIdReadRepository productUserIdReadRepository, IProductFeatureReadRepository productFeatureReadRepository, IPaymentReadRepository paymentReadRepository, IWishItemReadRepository wishItemReadRepository, IProductImageReadRepository productImageReadRepository, IImageManagerService manageImageHelper)
         {
             _productReadRepository = productReadRepository;
+            _storageService = storageService;
             _wishItemWriteRepository = wishItemWriteRepository;
             _productWriteRepository = productWriteRepository;
             _productFeatureWriteRepository = productFeatureWriteRepository;
@@ -45,14 +47,13 @@ namespace FarmAd.Persistence.Service.Area
             _paymentReadRepository = paymentReadRepository;
             _wishItemReadRepository = wishItemReadRepository;
             _productImageReadRepository = productImageReadRepository;
-            _manageImageHelper = manageImageHelper;
         }
         public async Task DeleteProduct(int id)
         {
             bool check = false;
             var Product = await _productReadRepository.GetAsync(x => !x.IsDelete && x.Id == id);
             if (Product == null)
-                throw new ItemNotFoundException("404");
+                throw new ItemNotFoundException("Elan tapılmadı!");
             var images = await _productImageReadRepository.GetAllAsync(x => x.ProductId == Product.Id && !x.IsDelete);
             var payments = await _paymentReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductId == Product.Id);
             var ProductUserIds = await _productUserIdReadRepository.GetAllAsync(x => !x.IsDelete && x.ProductId == Product.Id);
@@ -64,7 +65,7 @@ namespace FarmAd.Persistence.Service.Area
                 foreach (var image in images)
                 {
                     _productImageWriteRepository.Remove(image);
-                    _manageImageHelper.DeleteFile(image.Image, "Product");
+                    await _storageService.DeleteAsync("files/products",image.Image);
                 }
                 check = true;
             }
@@ -72,7 +73,8 @@ namespace FarmAd.Persistence.Service.Area
             {
                 foreach (var payment in payments)
                 {
-                    _paymentWriteRepository.Remove(payment);
+                    //_paymentWriteRepository.Remove(payment);
+                    payment.IsDelete = true;
                 }
                 check = true;
 

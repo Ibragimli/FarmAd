@@ -41,9 +41,11 @@ using FarmAd.Persistence.Repositories.WishItem;
 using FarmAd.Persistence.Service.Area;
 using FarmAd.Persistence.Service.User;
 using FarmAd.Persistence.Services;
+using FarmAd.Persistence.Services.Area;
 using FarmAd.Persistence.Services.Configurations;
 using FarmAd.Persistence.Services.User;
 using MailKit;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,8 +62,11 @@ namespace FarmAd.Persistence
         public static void AddPersistenceServices(this IServiceCollection services)
         {
 
-            //services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductGetServices, ProductGetServices>();
             services.AddScoped<IProductUserIdWriteRepository, ProductUserIdWriteRepository>();
+            services.AddScoped<IProductDeleteServices, ProductDeleteServices>();
+            services.AddScoped<IProductUserIdReadRepository, ProductUserIdReadRepository>();
+            services.AddScoped<IProductFeatureServices, ProductFeatureServices>();
 
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IOTPService, OTPService>();
@@ -107,6 +112,7 @@ namespace FarmAd.Persistence
             services.AddScoped<ISettingIndexServices, SettingIndexServices>();
             services.AddScoped<ISettingEditServices, SettingEditServices>();
             services.AddScoped<IAdminSubCategoryServices, AdminSubCategoryServices>();
+            services.AddScoped<IUserAuthenticationService, UserAuthenticationService>();
 
 
 

@@ -6,11 +6,25 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FarmAd.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class addmig : Migration
+    public partial class addmig2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AppRoles",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppRoles", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -64,6 +78,7 @@ namespace FarmAd.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
@@ -127,6 +142,22 @@ namespace FarmAd.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Menu",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Menu", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ServiceDurations",
                 columns: table => new
                 {
@@ -152,6 +183,7 @@ namespace FarmAd.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Key = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Value = table.Column<string>(type: "nvarchar(3000)", maxLength: 3000, nullable: false),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
@@ -167,8 +199,7 @@ namespace FarmAd.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsDisabled = table.Column<bool>(type: "bit", nullable: false),
                     Count = table.Column<int>(type: "int", nullable: false),
@@ -329,11 +360,37 @@ namespace FarmAd.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Endpoint",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HttpType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Definition = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MenuId = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Endpoint", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Endpoint_Menu_MenuId",
+                        column: x => x.MenuId,
+                        principalTable: "Menu",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductFeatures",
                 columns: table => new
                 {
-                    SubCategoryId = table.Column<int>(type: "int", nullable: false),
-                    CityId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Describe = table.Column<string>(type: "nvarchar(3000)", maxLength: 3000, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(70)", maxLength: 70, nullable: false),
@@ -352,14 +409,17 @@ namespace FarmAd.Persistence.Migrations
                     ExpirationDateDisabled = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpirationDateActive = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDisabled = table.Column<bool>(type: "bit", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    SubCategoryId = table.Column<int>(type: "int", nullable: false),
+                    CityId = table.Column<int>(type: "int", nullable: false),
+                    CityId1 = table.Column<int>(type: "int", nullable: true),
+                    SubCategoryId1 = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductFeatures", x => new { x.CityId, x.SubCategoryId });
+                    table.PrimaryKey("PK_ProductFeatures", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProductFeatures_Cities_CityId",
                         column: x => x.CityId,
@@ -367,9 +427,43 @@ namespace FarmAd.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_ProductFeatures_Cities_CityId1",
+                        column: x => x.CityId1,
+                        principalTable: "Cities",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_ProductFeatures_SubCategories_SubCategoryId",
                         column: x => x.SubCategoryId,
                         principalTable: "SubCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductFeatures_SubCategories_SubCategoryId1",
+                        column: x => x.SubCategoryId1,
+                        principalTable: "SubCategories",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppRoleEndpoint",
+                columns: table => new
+                {
+                    EndpointsId = table.Column<int>(type: "int", nullable: false),
+                    RolesId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppRoleEndpoint", x => new { x.EndpointsId, x.RolesId });
+                    table.ForeignKey(
+                        name: "FK_AppRoleEndpoint_AppRoles_RolesId",
+                        column: x => x.RolesId,
+                        principalTable: "AppRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AppRoleEndpoint_Endpoint_EndpointsId",
+                        column: x => x.EndpointsId,
+                        principalTable: "Endpoint",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -381,8 +475,6 @@ namespace FarmAd.Persistence.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductFeatureId = table.Column<int>(type: "int", nullable: false),
-                    ProductFeaturesCityId = table.Column<int>(type: "int", nullable: false),
-                    ProductFeaturesSubCategoryId = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
@@ -391,10 +483,10 @@ namespace FarmAd.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_ProductFeatures_ProductFeaturesCityId_ProductFeaturesSubCategoryId",
-                        columns: x => new { x.ProductFeaturesCityId, x.ProductFeaturesSubCategoryId },
+                        name: "FK_Products_ProductFeatures_ProductFeatureId",
+                        column: x => x.ProductFeatureId,
                         principalTable: "ProductFeatures",
-                        principalColumns: new[] { "CityId", "SubCategoryId" },
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -435,41 +527,48 @@ namespace FarmAd.Persistence.Migrations
                 name: "ProductImages",
                 columns: table => new
                 {
-                    ProductId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Image = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Path = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
                     IsProduct = table.Column<bool>(type: "bit", nullable: false),
-                    ProductId1 = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    ProductId1 = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductImages", x => x.ProductId);
+                    table.PrimaryKey("PK_ProductImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductImages_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProductImages_Products_ProductId1",
                         column: x => x.ProductId1,
                         principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProductUserIds",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductUserIds", x => new { x.ProductId, x.AppUserId });
+                    table.PrimaryKey("PK_ProductUserIds", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProductUserIds_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
@@ -488,16 +587,17 @@ namespace FarmAd.Persistence.Migrations
                 name: "WishItems",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WishItems", x => new { x.AppUserId, x.ProductId });
+                    table.PrimaryKey("PK_WishItems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_WishItems_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
@@ -511,6 +611,11 @@ namespace FarmAd.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppRoleEndpoint_RolesId",
+                table: "AppRoleEndpoint",
+                column: "RolesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -552,9 +657,24 @@ namespace FarmAd.Persistence.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Endpoint_MenuId",
+                table: "Endpoint",
+                column: "MenuId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payments_ProductId",
                 table: "Payments",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductFeatures_CityId",
+                table: "ProductFeatures",
+                column: "CityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductFeatures_CityId1",
+                table: "ProductFeatures",
+                column: "CityId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductFeatures_SubCategoryId",
@@ -562,14 +682,24 @@ namespace FarmAd.Persistence.Migrations
                 column: "SubCategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductFeatures_SubCategoryId1",
+                table: "ProductFeatures",
+                column: "SubCategoryId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_ProductId",
+                table: "ProductImages",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId1",
                 table: "ProductImages",
                 column: "ProductId1");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_ProductFeaturesCityId_ProductFeaturesSubCategoryId",
+                name: "IX_Products_ProductFeatureId",
                 table: "Products",
-                columns: new[] { "ProductFeaturesCityId", "ProductFeaturesSubCategoryId" });
+                column: "ProductFeatureId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductUserIds_AppUserId",
@@ -577,9 +707,19 @@ namespace FarmAd.Persistence.Migrations
                 column: "AppUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductUserIds_ProductId",
+                table: "ProductUserIds",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SubCategories_CategoryId",
                 table: "SubCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishItems_AppUserId",
+                table: "WishItems",
+                column: "AppUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WishItems_ProductId",
@@ -590,6 +730,9 @@ namespace FarmAd.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AppRoleEndpoint");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -636,6 +779,12 @@ namespace FarmAd.Persistence.Migrations
                 name: "WishItems");
 
             migrationBuilder.DropTable(
+                name: "AppRoles");
+
+            migrationBuilder.DropTable(
+                name: "Endpoint");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -643,6 +792,9 @@ namespace FarmAd.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Menu");
 
             migrationBuilder.DropTable(
                 name: "ProductFeatures");

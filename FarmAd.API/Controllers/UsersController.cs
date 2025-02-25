@@ -5,6 +5,7 @@ using FarmAd.Application.DTOs;
 using FarmAd.Application.Enums;
 using FarmAd.Application.Features.Commands.User.LoginAuthentication;
 using FarmAd.Application.Features.Commands.User.LoginUser;
+using FarmAd.Application.Features.Commands.User.SignOutUser;
 using FarmAd.Application.Features.Queries.User.GetAllUsers;
 using FarmAd.Domain.Entities.Identity;
 using MediatR;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace FarmAd.API.Controllers
 {
@@ -79,6 +81,24 @@ namespace FarmAd.API.Controllers
             try
             {
                 response = await _mediator.Send(request);
+            }
+            catch (Exception ms)
+            {
+                return Ok(ms.Message);
+            }
+            return Ok(response);
+        }
+
+
+        [HttpPost("signOut")]
+        //[AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "User SignOut", Menu = AuthorizeDefinationConstants.Users)]
+        public async Task<IActionResult> SignOut([FromQuery]SignOutUserCommandRequest request)
+        {
+            SignOutUserCommandResponse response = new();
+            try
+            {
+                response = await _mediator.Send(request);
+
             }
             catch (Exception ms)
             {

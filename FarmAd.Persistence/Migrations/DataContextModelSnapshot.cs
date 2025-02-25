@@ -326,25 +326,22 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<int>("ProductFeatureId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductFeaturesCityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductFeaturesSubCategoryId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductFeaturesCityId", "ProductFeaturesSubCategoryId");
+                    b.HasIndex("ProductFeatureId");
 
                     b.ToTable("Products");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductFeature", b =>
                 {
-                    b.Property<int>("CityId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("SubCategoryId")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CityId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
@@ -371,9 +368,6 @@ namespace FarmAd.Persistence.Migrations
 
                     b.Property<DateTime>("ExpirationDateVip")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -415,13 +409,18 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<int>("ProductStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("SubCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
 
                     b.Property<int>("WishCount")
                         .HasColumnType("int");
 
-                    b.HasKey("CityId", "SubCategoryId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("CityId");
 
                     b.HasIndex("SubCategoryId");
 
@@ -430,17 +429,14 @@ namespace FarmAd.Persistence.Migrations
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductImage", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<string>("Image")
                         .IsRequired()
@@ -460,29 +456,30 @@ namespace FarmAd.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProductId1")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.HasKey("ProductId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("FarmAd.Domain.Entities.ProductUserId", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("AppUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -490,9 +487,14 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ProductId", "AppUserId");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductUserIds");
                 });
@@ -668,17 +670,18 @@ namespace FarmAd.Persistence.Migrations
 
             modelBuilder.Entity("FarmAd.Domain.Entities.WishItem", b =>
                 {
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -686,7 +689,12 @@ namespace FarmAd.Persistence.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("AppUserId", "ProductId");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("ProductId");
 
@@ -971,7 +979,7 @@ namespace FarmAd.Persistence.Migrations
                 {
                     b.HasOne("FarmAd.Domain.Entities.ProductFeature", "ProductFeatures")
                         .WithMany("Products")
-                        .HasForeignKey("ProductFeaturesCityId", "ProductFeaturesSubCategoryId")
+                        .HasForeignKey("ProductFeatureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1001,7 +1009,7 @@ namespace FarmAd.Persistence.Migrations
                 {
                     b.HasOne("FarmAd.Domain.Entities.Product", "Product")
                         .WithMany("ProductImages")
-                        .HasForeignKey("ProductId1")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -36,7 +36,7 @@ namespace FarmAd.Persistence.Services.User
         {
             var Product = await _productReadRepository.GetAsync(x => x.Id == id && !x.IsDelete, "ProductImages", "ProductUserIds.AppUser", "ProductFeatures.City", "ProductFeatures.SubCategory.Category");
 
-            if (Product == null) throw new NotFoundException("error444");
+            if (Product == null) throw new NotFoundException("error404");
             return Product;
         }
         public async Task<List<Product>> GetSimilarProduct(int id, Product Product)
@@ -50,7 +50,7 @@ namespace FarmAd.Persistence.Services.User
         public async Task<ProductUserId> GetUser(int id)
         {
             var user = await _productUserIdReadRepository.GetAsync(x => x.ProductId == id && !x.IsDelete);
-            if (user == null) throw new NotFoundException("error444");
+            if (user == null) throw new NotFoundException("error404");
 
             return user;
         }

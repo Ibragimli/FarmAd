@@ -2,6 +2,8 @@
 using FarmAd.Application.CustomAttributes;
 using FarmAd.Application.Enums;
 using FarmAd.Application.Features.Commands.Product.ProductCreateCommand;
+using FarmAd.Application.Features.Commands.Product.ProductDeleteCommand;
+using FarmAd.Application.Features.Queries.Product.GetAllProducts;
 using FarmAd.Application.Features.Queries.Role.GetRoles;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +20,26 @@ namespace FarmAd.API.Controllers
         public ProductsController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+        [HttpGet("GetAllProducts")]
+        public async Task<IActionResult> GetAllProducts([FromQuery] GetAllProductsRequest request)
+        {
+            GetAllProductsResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpPost("CreateProduct")]
+        public async Task<IActionResult> CreateProduct([FromForm] ProductCreateCommandRequest request)
+        {
+            ProductCreateCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteProduct/{Id}")]
+        public async Task<IActionResult> DeleteProduct([FromRoute] ProductDeleteCommandRequest request)
+        {
+            ProductDeleteCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
         }
         [HttpPost("CreateImage")]
         public async Task<IActionResult> CreateImage([FromForm] ProductCreateCommandRequest request)

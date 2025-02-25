@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
 {
-    public class ProductCreateCommandResponse
+    public class ProductLoginCreateCommandResponse
     {
-        public string Username { get; set; }
         public bool Succeed { get; set; }
+        public string Username { get; set; }
     }
 }

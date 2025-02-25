@@ -1,8 +1,10 @@
 ﻿using FarmAd.Application.Exceptions;
 using FarmAd.Application.Repositories.Endpoint;
+using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Domain.Entities;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +21,16 @@ namespace FarmAd.Persistence.Services.User
     public class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserAuthenticationWriteRepository _userAuthenticationWriteRepository;
         private readonly IEndpointReadRepository _endpointReadRepository;
         private readonly SignInManager<AppUser> _signInManager;
 
-        public UserService(UserManager<AppUser> userManager, IEndpointReadRepository endpointReadRepository, SignInManager<AppUser> signInManager)
+        public UserService(UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IEndpointReadRepository endpointReadRepository, SignInManager<AppUser> signInManager)
         {
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
+            _userAuthenticationWriteRepository = userAuthenticationWriteRepository;
             _endpointReadRepository = endpointReadRepository;
             _signInManager = signInManager;
         }
@@ -33,7 +39,38 @@ namespace FarmAd.Persistence.Services.User
             List<AppUser> users = await _userManager.Users.Skip(page * size).Take(size).ToListAsync();
             return users;
         }
+        public async Task<AppUser> CreateNewUser(string phoneNumber, string email, string fullname)
+        {
+            AppUser newUser = new AppUser();
+            //hesab yaradmaq
 
+            var UserExists = await GetAsync(x => x.PhoneNumber == phoneNumber);
+            if (UserExists == null)
+            {
+                newUser = new AppUser
+                {
+                    UserName = phoneNumber,
+                    PhoneNumber = phoneNumber,
+                    IsAdmin = false,
+                    Balance = 0,
+                    Email = email,
+                    Fullname = fullname,
+                };
+                var result = await _userManager.CreateAsync(newUser);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        throw new Exception(error.Description);
+                    }
+                }
+                await _userManager.AddToRoleAsync(newUser, "User");
+                await _userAuthenticationWriteRepository.SaveAsync();
+                return newUser;
+            }
+            return UserExists;
+            //hesab yaradmaq
+        }
         public async Task<AppUser> GetAsync(Expression<Func<AppUser, bool>> predicate)
 
         {
@@ -96,7 +133,7 @@ namespace FarmAd.Persistence.Services.User
             var userRoles = await GetRolesToUserAsync(username);
             if (!userRoles.Any())
                 return false;
-            Endpoint? endpoint = await _endpointReadRepository.Table.Include(e => e.Roles).FirstOrDefaultAsync(e => e.Code == code);
+            FarmAd.Domain.Entities.Endpoint? endpoint = await _endpointReadRepository.Table.Include(e => e.Roles).FirstOrDefaultAsync(e => e.Code == code);
             if (endpoint == null)
                 return false;
 
@@ -113,6 +150,21 @@ namespace FarmAd.Persistence.Services.User
         }
 
         public async Task SignOutUser() { await _signInManager.SignOutAsync(); }
+
+        public bool IsIdendity(string username)
+        {
+            var isUser = _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
+            if (isUser)
+                return true;
+            return false;
+        }
+        public string IdentityUser()
+        {
+            var username = _httpContextAccessor.HttpContext.User.Identity.Name;
+            if (username != null)
+                return username;
+            return null;
+        }
     }
 
 }
