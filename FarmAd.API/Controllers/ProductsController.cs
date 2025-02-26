@@ -1,6 +1,7 @@
 ﻿using FarmAd.Application.Consts;
 using FarmAd.Application.CustomAttributes;
 using FarmAd.Application.Enums;
+using FarmAd.Application.Features.Commands.Product.ProductAuthenticationCommand;
 using FarmAd.Application.Features.Commands.Product.ProductCreateCommand;
 using FarmAd.Application.Features.Commands.Product.ProductDeleteCommand;
 using FarmAd.Application.Features.Queries.Product.GetAllProducts;
@@ -32,6 +33,12 @@ namespace FarmAd.API.Controllers
         public async Task<IActionResult> CreateProduct([FromForm] ProductCreateCommandRequest request)
         {
             ProductCreateCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
+        [HttpPost("ProductAuthentication")]
+        public async Task<IActionResult> ProductAuthentication([FromForm] ProductAuthenticationCommandRequest request)
+        {
+            ProductAuthenticationCommandResponse response = await _mediator.Send(request);
             return Ok(response);
         }
 

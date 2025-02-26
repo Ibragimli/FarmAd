@@ -15,21 +15,22 @@ namespace FarmAd.Application.Abstractions.Services.User
     {
 
         Task CreateImagesAsync(List<IFormFile> imageFiles, int productId);
+        Task CreateImagesAsync(List<string> imageFiles, List<string> imagesPath, int productId,string username);
 
+        Task CreateOTPCode(string username);
         Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto);
         //Task CreateImageString(List<string> imageFiles, int ProductId);
-        void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto);
-        void SendCode(string email, string code);
+        //void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto);
         Task<Product> CreateProduct(ProductFeature features);
         Task<Product> CreateProductForm(ProductFeature features, List<IFormFile> imageFiles);
-        //void SaveChange(Product Product);
-        //void SaveContext(Product Product);
-
-        Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, List<string> images);
-        ProductCreateDto GetProductCookie();
+        //ProductCreateDto GetProductCookie();
         List<string> GetImageFilesCookie();
         Task CreateProductUserId(string userId, int ProductId);
         Task ChangeAuthenticationStatus(UserAuthentication authentication);
+        Task CreateProductRedisAsync(List<IFormFile> imageFiles, ProductCreateDto productCreateDto);
+        Task<ProductCreateDto> GetProductFromRedisAsync(string username);
+
+        void SendCode(string email, string code);
 
     }
 }

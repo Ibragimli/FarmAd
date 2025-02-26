@@ -11,6 +11,6 @@ namespace FarmAd.Application.Abstractions.Services.User
 {
     public interface IUserAuthenticationService
     {
-        Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, List<string> images);
+        Task<UserAuthentication> CheckAuthenticationAsync(string code, string phoneNumber, List<string> images);
     }
 }

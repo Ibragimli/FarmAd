@@ -20,7 +20,8 @@ namespace FarmAd.Application.DTOs.User
         public string UserName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public List<string>? ImageFilesStr { get; set; }
+        public List<string>? ImageFilesStr { get; set; } = new List<string>(); // Başlangıçta boş liste
+        public List<string>? ImagePathStr { get; set; } = new List<string>();  // Başlangıçta boş liste
         public List<IFormFile> ImageFiles { get; set; }
     }
     public class ProductCreateDtoValidator : AbstractValidator<ProductCreateDto>

@@ -1,7 +1,10 @@
 ﻿using FarmAd.Application.Abstractions.Services.User;
+using FarmAd.Application.Abstractions.Tokens;
+using FarmAd.Application.DTOs;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +25,19 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
         }
         public async Task<ProductCreateCommandResponse> Handle(ProductCreateCommandRequest request, CancellationToken cancellationToken)
         {
+            bool isLogin = true;
             var dto = request.ProductCreateDto;
             AppUser user = await _userService.GetAsync(x => x.UserName == dto.UserName);
+            string username = _userService.IdentityUser();
 
-            //User daxil olubsa
+            // User yaradilmiyibsa
+            if (user == null)
+            {
+                await _userService.CreateNewUser(dto.UserName, dto.Email, dto.Name);
+                user = await _userService.GetAsync(x => x.UserName == dto.UserName); // Kullanıcıyı tekrar getir
+            }
+
+            // Kullanıcı giriş yaptıysa
             if (_userService.IsIdendity(dto.UserName))
             {
                 var feature = await _productCreateServices.CreateProductFeature(dto);
@@ -33,19 +45,20 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
                 await _productCreateServices.CreateImagesAsync(dto.ImageFiles, prd.Id);
                 await _productCreateServices.CreateProductUserId(user.Id, prd.Id);
             }
-            //user daxil olmayibsa
-            else
-                _productCreateServices.CreateProductCookie(dto.ImageFiles, dto);
-            string username = _userService.IdentityUser();
-
-            if (user == null)
-                await _userService.CreateNewUser(dto.UserName, dto.Email, dto.Name);
+            else // Kullanıcı giriş yapmadıysa
+            {
+                await _productCreateServices.CreateProductRedisAsync(dto.ImageFiles, dto);
+                await _productCreateServices.CreateOTPCode(dto.UserName);
+                isLogin = false;
+            }
 
             return new()
             {
+                IsLogin = isLogin,
                 Username = username,
                 Succeed = true
             };
         }
+
     }
 }

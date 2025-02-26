@@ -5,9 +5,9 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
+namespace FarmAd.Application.Features.Commands.Product.ProductAuthenticationCommand
 {
-    public class ProductLoginCreateCommandResponse
+    public class ProductAuthenticationCommandResponse
     {
         public bool Succeed { get; set; }
         public string Username { get; set; }

@@ -24,6 +24,7 @@ using FarmAd.API.Extensions;
 using System.Security.Claims;
 using FarmAd.Infrastructure.Service.Storage.Azure;
 using FarmAd.Infrastructure.Service.Storage.Local;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
@@ -53,6 +54,9 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
 
 #region Log
 
@@ -120,7 +124,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Token:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
             LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null && expires > DateTime.UtcNow.AddHours(4).AddSeconds(-1),
-            NameClaimType = ClaimTypes.Name 
+            NameClaimType = ClaimTypes.Name
 
         });
 #endregion 

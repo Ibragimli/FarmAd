@@ -22,6 +22,7 @@ namespace FarmAd.Application.Features.Commands.User.AssignRoleToUser
         public async Task<GetAllUserAuthenticationCommandResponse> Handle(GetAllUserAuthenticationCommandRequest request, CancellationToken cancellationToken)
         {
             var userAuthentications = await _authService.GetAllUserAuthentication(request.Page, request.Size);
+            userAuthentications.Reverse();
             return new()
             {
                 UserAuthentications = userAuthentications

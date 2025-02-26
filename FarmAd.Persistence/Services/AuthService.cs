@@ -48,6 +48,62 @@ namespace FarmAd.Persistence.Services
             _userService = userService;
             _httpContextAccessor = httpContextAccessor;
         }
+        public async Task<string> Login(string username)
+        {
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                await _signInManager.SignOutAsync();
+
+            PhoneNumberHelper.PhoneNumberValidation(username);
+            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
+            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
+
+            bool userExist = await _userManager.Users.AnyAsync(x => x.UserName == newUsername);
+            if (!userExist)
+                await CreateUser(newUsername);
+           
+            //otpcode
+            var code = _oTPService.CodeCreate();
+            var user = await _userManager.FindByNameAsync(newUsername);
+            var auth = await _oTPService.CreateAuthentication(code, newUsername);
+            Token token = _tokenHandler.CreateAccesToken(5, user);
+            //await _signInManager.SignInAsync(user, isPersistent: false);
+            return token.AccesToken;
+        }
+
+        public async Task<Token> LoginAuthentication(string username, string code, string token)
+        {
+            PhoneNumberHelper.PhoneNumberValidation(username);
+            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
+            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
+
+            if (!_tokenHandler.ValidateToken(token))
+                throw new UnauthorizedUserException();
+
+            var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
+            AppUser user = await _userManager.FindByNameAsync(newUsername);
+            if (user == null)
+                throw new NotFoundUserException();
+
+            var authentication = await _userAuthenticationReadRepository
+                .GetAsync(x => x.IsDisabled == false && x.Username == newUsername && x.Code == code);
+
+            if (authentication == null)
+                throw new AuthenticationCodeException("Kod yanlışdır!");
+
+            if (authentication.ExpirationDate.TimeOfDay < now)
+            {
+                authentication.IsDisabled = true;
+                await _userAuthenticationWriteRepository.SaveAsync();
+                throw new ExpirationDateException();
+            }
+            await _signInManager.SignOutAsync();
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            Token newToken = _tokenHandler.CreateAccesToken(10, user);
+
+            return newToken;
+            //string name = _httpContextAccessor.HttpContext.User.Identity.Name;
+            //return name;
+        }   
         public async Task<bool> CreateUserPostman(RegisterUserDto model)
         {
             //string[] roles = { "User", "Admin" };
@@ -132,61 +188,7 @@ namespace FarmAd.Persistence.Services
             return dtos;
         }
 
-        public async Task<string> Login(string username)
-        {
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                await _signInManager.SignOutAsync();
-
-            PhoneNumberHelper.PhoneNumberValidation(username);
-            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
-            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
-
-            bool userExist = await _userManager.Users.AnyAsync(x => x.UserName == newUsername);
-            if (!userExist)
-                await CreateUser(newUsername);
-
-            var code = _oTPService.CodeCreate();
-            var user = await _userManager.FindByNameAsync(newUsername);
-            var auth = await _oTPService.CreateAuthentication(code, newUsername);
-            Token token = _tokenHandler.CreateAccesToken(5, user);
-            //await _signInManager.SignInAsync(user, isPersistent: false);
-            return token.AccesToken;
-        }
-
-        public async Task<Token> LoginAuthentication(string username, string code, string token)
-        {
-            PhoneNumberHelper.PhoneNumberValidation(username);
-            PhoneNumberHelper.PhoneNumberPrefixValidation(username);
-            var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
-
-            if (!_tokenHandler.ValidateToken(token))
-                throw new UnauthorizedUserException();
-
-            var now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-            AppUser user = await _userManager.FindByNameAsync(newUsername);
-            if (user == null)
-                throw new NotFoundUserException();
-
-            var authentication = await _userAuthenticationReadRepository
-                .GetAsync(x => x.IsDisabled == false && x.Username == newUsername && x.Code == code);
-
-            if (authentication == null)
-                throw new AuthenticationCodeException("Kod yanlışdır!");
-
-            if (authentication.ExpirationDate.TimeOfDay < now)
-            {
-                authentication.IsDisabled = true;
-                await _userAuthenticationWriteRepository.SaveAsync();
-                throw new ExpirationDateException();
-            }
-            await _signInManager.SignOutAsync();
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            Token newToken = _tokenHandler.CreateAccesToken(10, user);
-
-            return newToken;
-            //string name = _httpContextAccessor.HttpContext.User.Identity.Name;
-            //return name;
-        }
+       
 
         public async Task PasswordResetAsync(string username)
         {

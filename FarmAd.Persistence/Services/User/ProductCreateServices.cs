@@ -26,6 +26,10 @@ using FarmAd.Application.Abstractions.Storage;
 using AutoMapper;
 using FarmAd.Application.Repositories.SubCategory;
 using FarmAd.Application.Repositories.City;
+using FarmAd.Application.DTOs;
+using FarmAd.Persistence.Service.User;
+using FarmAd.Application.Abstractions.Tokens;
+using FarmAd.Infrastructure.Service;
 
 namespace FarmAd.Persistence.Services.User
 {
@@ -33,6 +37,9 @@ namespace FarmAd.Persistence.Services.User
     public class ProductCreateServices : IProductCreateServices
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IRedisCacheServices _redisCacheServices;
+        private readonly ITokenHandler _tokenHandler;
+        private readonly IOTPService _oTPService;
         private readonly ICityReadRepository _cityReadRepository;
         private readonly ISubCategoryReadRepository _subCategoryReadRepository;
         private readonly IMapper _mapper;
@@ -48,9 +55,12 @@ namespace FarmAd.Persistence.Services.User
         private readonly IEmailServices _emailServices;
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public ProductCreateServices(UserManager<AppUser> userManager, ICityReadRepository cityReadRepository, ISubCategoryReadRepository subCategoryReadRepository, IMapper mapper, IStorageService storageService, IProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
+        public ProductCreateServices(UserManager<AppUser> userManager, IRedisCacheServices redisCacheServices, ITokenHandler tokenHandler, IOTPService oTPService, ICityReadRepository cityReadRepository, ISubCategoryReadRepository subCategoryReadRepository, IMapper mapper, IStorageService storageService, IProductUserIdWriteRepository productUserIdWriteRepository, IUserService userService, IUserAuthenticationWriteRepository userAuthenticationWriteRepository, IUserAuthenticationReadRepository userAuthenticationReadRepository, IProductWriteRepository productWriteRepository, IProductFeatureWriteRepository productFeatureWriteRepository, IProductImageWriteRepository productImageWriteRepository, IImageManagerService manageImageHelper, IEmailServices emailServices, IHttpContextAccessor contextAccessor) : base()
         {
             _userManager = userManager;
+            _redisCacheServices = redisCacheServices;
+            _tokenHandler = tokenHandler;
+            _oTPService = oTPService;
             _cityReadRepository = cityReadRepository;
             _subCategoryReadRepository = subCategoryReadRepository;
             _mapper = mapper;
@@ -73,7 +83,6 @@ namespace FarmAd.Persistence.Services.User
             for (int i = 0; i < imageFiles.Count; i++)
             {
                 var (fileName, path) = _storageService.UploadAsync("files\\products", imageFiles[i]);
-
                 productImages.Add(new ProductImage
                 {
                     IsProduct = i == 0, // İlk resim için true, diğerleri false olacak
@@ -85,33 +94,95 @@ namespace FarmAd.Persistence.Services.User
             await _productImageWriteRepository.AddRangeAsync(productImages);
             await _productImageWriteRepository.SaveAsync();
         }
-        public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
+
+        public async Task CreateImagesAsync(List<string> imageFiles, List<string> imagesPath, int productId, string username)
         {
+            List<ProductImage> productImages = new();
+
+            for (int i = 0; i < imageFiles.Count; i++)
+            {
+                var imageFile = imageFiles[i];
+                var imagePath = imagesPath[i];
+
+                ProductImage productImage = new ProductImage
+                {
+                    IsProduct = i == 0,
+                    Path = imagePath,
+                    Image = imageFile,
+                    ProductId = productId
+                };
+
+                // Resmi veritabanına kaydet
+                productImages.Add(productImage);
+            }
+            await _productImageWriteRepository.AddRangeAsync(productImages);
+            await _productImageWriteRepository.SaveAsync();
+            await _redisCacheServices.ClearAsync($"ProductImageFiles:{username}");
+            await _redisCacheServices.ClearAsync($"ProductPath:{username}");
+            await _redisCacheServices.ClearAsync($"ProductVM:{username}");
+        }
+
+        //public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
+        //{
+
+        //    foreach (var item in imageFiles)
+        //    {
+        //        var (filename, path) = _storageService.UploadAsync("files\\products", item); ;
+
+        //        ProductCreateDto.ImageFilesStr.Add(filename);
+        //    }
+        //    var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
+        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
+        //    ProductCreateDto.ImageFiles = null;
+        //    var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
+        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
+        //}
+        public async Task CreateProductRedisAsync(List<IFormFile> imageFiles, ProductCreateDto productCreateDto)
+        {
+            string userKey = productCreateDto.PhoneNumber; // Və ya unikal productId istifadə et
+
             foreach (var item in imageFiles)
             {
-                var (filename, path) = _storageService.UploadAsync("files\\products", item); ;
-
-                ProductCreateDto.ImageFilesStr.Add(filename);
+                var (filename, path) = _storageService.UploadAsync("files\\products", item);
+                productCreateDto.ImageFilesStr.Add(filename);
+                productCreateDto.ImagePathStr.Add(path);
             }
-            var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
-            _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
-            ProductCreateDto.ImageFiles = null;
-            var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
-            _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
+            // Redis için JSON formatına çevir
+            var productImageStr = JsonConvert.SerializeObject(productCreateDto.ImageFilesStr);
+            var productPathStr = JsonConvert.SerializeObject(productCreateDto.ImagePathStr);
+            productCreateDto.ImageFiles = null;
+            var productStr = JsonConvert.SerializeObject(productCreateDto);
+
+            // Redis'e kaydet (Geçerlilik süresi: 30 dakika)
+            await _redisCacheServices.SetValueAsync($"ProductImageFiles:{userKey}", productImageStr);
+            await _redisCacheServices.SetValueAsync($"ProductPath:{userKey}", productPathStr);
+            await _redisCacheServices.SetValueAsync($"ProductVM:{userKey}", productStr);
         }
-        public ProductCreateDto GetProductCookie()
+
+        public async Task<ProductCreateDto> GetProductFromRedisAsync(string username)
         {
-            ProductCreateDto ProductCreateDto = new ProductCreateDto();
+            // Redis'ten ProductVM key'ini oku
+            var productItem = await _redisCacheServices.GetValueAsync($"ProductVM:{username}");
 
-            //cookie
-            string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
+            if (!string.IsNullOrEmpty(productItem))
+                return JsonConvert.DeserializeObject<ProductCreateDto>(productItem);
 
-            if (ProductItem != null)
-                ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
-            else
-                throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
-            return ProductCreateDto;
+            throw new CookieNotActiveException("Kodun müddəti və ya təkrar etmək limiti bitmişdir!Yenidən cəhd edin");
         }
+
+        //public ProductCreateDto GetProductCookie()
+        //{
+        //    ProductCreateDto ProductCreateDto = new ProductCreateDto();
+
+        //    //cookie
+        //    string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
+
+        //    if (ProductItem != null)
+        //        ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
+        //    else
+        //        throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
+        //    return ProductCreateDto;
+        //}
 
         //public async Task CreateImageString(List<string> imageFiles, int ProductId)
         //{
@@ -242,64 +313,12 @@ namespace FarmAd.Persistence.Services.User
 
         }
 
-        //public async void SaveChange(Product Product)
-        //{
-        //    await _productReadRepository.InsertAsync(Product);
-        //}
-        //public async void SaveContext(Product Product)
-        //{
-        //    await _unitOfWork.CommitAsync();
-        //}
 
         public void SendCode(string email, string code)
         {
             _emailServices.Send(email, "Doğrulama kodunuz", code);
         }
 
-        public async Task<UserAuthentication> CheckAuthentication(string code, string phoneNumber, List<string> images)
-        {
-            TimeSpan now = DateTime.UtcNow.AddHours(4).TimeOfDay;
-
-            UserAuthentication authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
-            if (authentication == null)
-                throw new ExpirationDateException("Kod yanlışdır! Təkrar giriş edin");
-
-            //Kodun müddəti bitmişdir
-            if (authentication.ExpirationDate.TimeOfDay < now)
-            {
-                foreach (var image in images)
-                {
-                    _manageImageHelper.DeleteFile(image, "Product");
-                }
-                authentication.IsDisabled = true;
-                _contextAccessor.HttpContext.Response.Cookies.Delete("ProductVM");
-                _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
-                await _userAuthenticationWriteRepository.SaveAsync();
-                throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-            }
-
-            //Kod dogrulugunun yoxlanilmasi, təkrar yoxlama limiti
-            if (authentication == null)
-            {
-
-                if (authentication.Count > 1)
-                    authentication.Count -= 1;
-                else
-                {
-                    foreach (var image in images)
-                    {
-                        _manageImageHelper.DeleteFile(image, "Product");
-                    }
-                    authentication.IsDisabled = true;
-                    _contextAccessor.HttpContext.Response.Cookies.Delete("ProductVM");
-                    _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
-                }
-                await _userAuthenticationWriteRepository.SaveAsync();
-
-                throw new AuthenticationCodeException("Kod yanlışdır!");
-            }
-            return authentication;
-        }
         public List<string> GetImageFilesCookie()
         {
             List<string> images = new List<string>();
@@ -311,7 +330,7 @@ namespace FarmAd.Persistence.Services.User
                 throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
             return images;
         }
-    
+
         public async Task CreateProductUserId(string userId, int ProductId)
         {
             ProductUserId ProductUserId = new ProductUserId();
@@ -333,6 +352,13 @@ namespace FarmAd.Persistence.Services.User
             await _userAuthenticationWriteRepository.SaveAsync();
         }
 
-
+        public async Task CreateOTPCode(string username)
+        {
+            //otpcode
+            var code = _oTPService.CodeCreate();
+            var user = await _userService.GetAsync(x => x.UserName == username);
+            var auth = await _oTPService.CreateAuthentication(code, username);
+            Token token = _tokenHandler.CreateAccesToken(5, user);
+        }
     }
 }

@@ -37,6 +37,7 @@ namespace FarmAd.Infrastructure
             services.AddScoped<ISmsSenderServices, SmsSenderServices>();
             services.AddScoped<IApplicationService, ApplicationService>(); // Eğer eksikse
             services.AddScoped<IStorageService, StorageService>();
+            services.AddScoped<IRedisCacheServices, RedisCacheServices>();
 
 
         }

@@ -11,5 +11,6 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
     {
         public string Username { get; set; }
         public bool Succeed { get; set; }
+        public bool IsLogin { get; set; }
     }
 }
