@@ -1,4 +1,5 @@
-﻿using FarmAd.Domain.Entities;
+﻿using FarmAd.Application.DTOs;
+using FarmAd.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,10 +9,11 @@ namespace FarmAd.Application.Abstractions.Services.User
 {
     public interface IOTPService
     {
-        public string CreateToken();
+        Task CreateAuthenticationAsync(string username, string code);
+        Task CreateAuthenticationAsync(string token, string username, string code);
         public string CodeCreate();
-        public string encryptSha256(string randomString);
-        public Task<UserAuthentication> CreateAuthentication( string code, string phoneNumber);
+        (string, string, int) SplitRedisCode(string storedValue);
+        public Task<UserAuthentication> CreateAuthentication(string code, string phoneNumber);
 
     }
 }

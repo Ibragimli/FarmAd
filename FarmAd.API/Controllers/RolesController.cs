@@ -15,7 +15,7 @@ namespace FarmAd.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = "Admin")]
+    [Authorize(AuthenticationSchemes = "Admin")]
     public class RolesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -25,8 +25,8 @@ namespace FarmAd.API.Controllers
             _mediator = mediator;
         }
         [HttpGet("GetRoles")]
-        //[AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles", Menu = AuthorizeDefinationConstants.Roles)]
-        public async Task<IActionResult> GetRoles([FromQuery] GetRolesQueriesRequest getRolesQueryRequest)
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles", Menu = AuthorizeDefinationConstants.Roles)]
+        public async Task<IActionResult> GetRoles([FromBody] GetRolesQueriesRequest getRolesQueryRequest)
         {
             GetRolesQueriesResponse response = await _mediator.Send(getRolesQueryRequest);
             return Ok(response);

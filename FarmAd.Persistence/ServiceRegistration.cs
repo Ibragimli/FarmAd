@@ -62,6 +62,8 @@ namespace FarmAd.Persistence
         public static void AddPersistenceServices(this IServiceCollection services)
         {
 
+
+
             services.AddScoped<IProductGetServices, ProductGetServices>();
             services.AddScoped<IProductUserIdWriteRepository, ProductUserIdWriteRepository>();
             services.AddScoped<IProductDeleteServices, ProductDeleteServices>();

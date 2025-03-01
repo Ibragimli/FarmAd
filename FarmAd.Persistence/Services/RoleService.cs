@@ -1,4 +1,6 @@
 ﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Application.Abstractions.Tokens;
+using FarmAd.Application.DTOs;
 using FarmAd.Application.Exceptions;
 using FarmAd.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -14,11 +16,14 @@ namespace FarmAd.Persistence.Services
     public class RoleService : IRoleService
     {
         private readonly RoleManager<AppRole> _roleManager;
+        private readonly ITokenHandler _tokenHandler;
 
-        public RoleService(RoleManager<AppRole> roleManager)
+        public RoleService(RoleManager<AppRole> roleManager, ITokenHandler tokenHandler)
         {
             _roleManager = roleManager;
+            _tokenHandler = tokenHandler;
         }
+
         public async Task<bool> CreateRole(string name)
         {
             bool nameExists = await _roleManager.Roles.AnyAsync(r => r.Name == name);

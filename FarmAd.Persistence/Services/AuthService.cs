@@ -5,10 +5,12 @@ using FarmAd.Application.Abstractions.Tokens;
 using FarmAd.Application.DTOs;
 using FarmAd.Application.DTOs.User;
 using FarmAd.Application.Exceptions;
+using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.UserAuthentication;
 using FarmAd.Domain.Entities;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
+using FarmAd.Persistence.Contexts;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -17,10 +19,12 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualBasic;
+using StackExchange.Redis;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FarmAd.Persistence.Services
 {
@@ -60,18 +64,33 @@ namespace FarmAd.Persistence.Services
             bool userExist = await _userManager.Users.AnyAsync(x => x.UserName == newUsername);
             if (!userExist)
                 await CreateUser(newUsername);
-           
-            //otpcode
-            var code = _oTPService.CodeCreate();
+
             var user = await _userManager.FindByNameAsync(newUsername);
-            var auth = await _oTPService.CreateAuthentication(code, newUsername);
-            Token token = _tokenHandler.CreateAccesToken(5, user);
-            //await _signInManager.SignInAsync(user, isPersistent: false);
+
+            try
+            {
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message); // Inner exception detalları
+            }
+            Token token = _tokenHandler.CreateAccesToken(6000000, user);
+
+            await _signInManager.SignOutAsync();
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+
             return token.AccesToken;
         }
 
         public async Task<Token> LoginAuthentication(string username, string code, string token)
         {
+            ////otpcode
+            //var code = _oTPService.CodeCreate();
+            //var auth = await _oTPService.CreateAuthentication(code, newUsername);
+
+
             PhoneNumberHelper.PhoneNumberValidation(username);
             PhoneNumberHelper.PhoneNumberPrefixValidation(username);
             var newUsername = PhoneNumberHelper.PhoneNumberFilter(username);
@@ -98,14 +117,16 @@ namespace FarmAd.Persistence.Services
             }
             await _signInManager.SignOutAsync();
             await _signInManager.SignInAsync(user, isPersistent: false);
-            Token newToken = _tokenHandler.CreateAccesToken(10, user);
-
+            Token newToken = _tokenHandler.CreateAccesToken(60, user);
             return newToken;
             //string name = _httpContextAccessor.HttpContext.User.Identity.Name;
             //return name;
-        }   
+        }
         public async Task<bool> CreateUserPostman(RegisterUserDto model)
         {
+            AppUser user = await _userManager.FindByNameAsync(model.Username);
+            await _userManager.AddToRoleAsync(user, "User");
+
             //string[] roles = { "User", "Admin" };
 
             //foreach (var role in roles)
@@ -149,24 +170,81 @@ namespace FarmAd.Persistence.Services
         public async Task<bool> CreateUser(string username)
         {
 
-
+            IdentityResult result;
             var user = new AppUser
             {
                 UserName = username,
                 Fullname = null,
                 IsAdmin = false,
                 Balance = 0
-
             };
-            var result = await _userManager.CreateAsync(user);
+
+            result = await _userManager.CreateAsync(user);
+
             await _userAuthenticationWriteRepository.SaveAsync();
+
             if (!result.Succeeded)
                 foreach (var error in result.Errors)
                     throw new Exception(error.Description);
 
-            await _userManager.AddToRoleAsync(user, "User");
+
+            var appRole = new AppRole
+            {
+                Name = "Admin",
+            };
+
+            // AspNetRole repository-si vasitəsilə rolu əlavə edirik
+            var roleResult = await _roleManager.CreateAsync(appRole);
+            if (!roleResult.Succeeded)
+            {
+                throw new Exception("User rolunun yaradılmasında xəta baş verdi.");
+            }
+            await _userAuthenticationWriteRepository.SaveAsync();
+
+
+
+            //// Kullanıcıya rol ekle
+            //var role = await _roleManager.FindByNameAsync("User");
+            //var userRole = new IdentityUserRole<string>
+            //{
+            //    UserId = user.Id,
+            //    RoleId = role.Id
+            //};
+            //_dataContext.UserRoles.Add(userRole);
+
+
+            //var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+            try
+            {
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message); // Inner exception detalları
+                                                                 // və ya 
+            }
             await _userAuthenticationWriteRepository.SaveAsync();
             return true;
+
+            //var existingRole = await _roleManager.FindByNameAsync("User");
+            //if (existingRole == null)
+            //{
+            //    // Rol mövcud deyil – yaradın
+            //    var roleResult = await _roleManager.CreateAsync(new AppRole { Name = "User" });
+            //    if (!roleResult.Succeeded)
+            //    {
+            //        throw new Exception("User rolunun yaradılmasında xəta baş verdi.");
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine($"Existing Role Id: {existingRole.Id}");
+            //    if (string.IsNullOrEmpty(existingRole.Id))
+            //    {
+            //        throw new Exception("Mövcud 'User' rolunun Id-si null-dur.");
+            //    }
+            //}
+            //return true;
         }
 
         public async Task<List<AllUserDto>> GetAllUser()
@@ -188,7 +266,7 @@ namespace FarmAd.Persistence.Services
             return dtos;
         }
 
-       
+
 
         public async Task PasswordResetAsync(string username)
         {

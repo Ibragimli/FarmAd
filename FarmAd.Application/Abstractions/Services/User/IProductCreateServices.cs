@@ -1,4 +1,5 @@
 ﻿using FarmAd.Application.Abstractions.Storage;
+using FarmAd.Application.DTOs;
 using FarmAd.Application.DTOs.User;
 using FarmAd.Application.Repositories.ProductImage;
 using FarmAd.Domain.Entities;
@@ -17,7 +18,7 @@ namespace FarmAd.Application.Abstractions.Services.User
         Task CreateImagesAsync(List<IFormFile> imageFiles, int productId);
         Task CreateImagesAsync(List<string> imageFiles, List<string> imagesPath, int productId,string username);
 
-        Task CreateOTPCode(string username);
+        Task<string> CreateOTPCode(string username);
         Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto);
         //Task CreateImageString(List<string> imageFiles, int ProductId);
         //void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto);

@@ -73,16 +73,6 @@ columnOpts.AdditionalColumns = new Collection<SqlColumn> { sqlColumn };
 
 // Logger log = new LoggerConfiguration().CreateLogger();
 Logger log = new LoggerConfiguration()
-
-    // DB log
-    //.WriteTo.MSSqlServer(connectionString: builder.Configuration.GetConnectionString("Default"),
-
-    //      sinkOptions: new MSSqlServerSinkOptions
-    //      {
-    //          AutoCreateSqlTable = true,
-    //          TableName = "LogEvents",
-    //      }, appConfiguration: null, columnOptions: columnOpts)
-
     // ConsoleLog
     .WriteTo.Console()
     // Filelog
@@ -97,7 +87,6 @@ builder.Host.UseSerilog(log);
 #endregion 
 
 #region htttpLog
-
 //htttpLog
 builder.Services.AddHttpLogging(logging =>
 {
@@ -109,6 +98,9 @@ builder.Services.AddHttpLogging(logging =>
 });
 //htttpLog
 #endregion 
+
+Console.Write($"Seq URL: {builder.Configuration["Seq:ServerURL"]}");
+
 
 #region JwtBearer
 //JwtBearer
@@ -123,7 +115,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Token:Audience"],
             ValidIssuer = builder.Configuration["Token:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
-            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null && expires > DateTime.UtcNow.AddHours(4).AddSeconds(-1),
+            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null && expires > DateTime.UtcNow.AddSeconds(-1),
             NameClaimType = ClaimTypes.Name
 
         });
@@ -154,12 +146,10 @@ app.UseSerilogRequestLogging();
 app.UseHttpLogging();
 //htttpLog
 
-app.UseCors();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors();
 
 
 app.Use(async (context, next) =>

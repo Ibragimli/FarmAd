@@ -29,6 +29,7 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
             var dto = request.ProductCreateDto;
             AppUser user = await _userService.GetAsync(x => x.UserName == dto.UserName);
             string username = _userService.IdentityUser();
+            string token ="";
 
             // User yaradilmiyibsa
             if (user == null)
@@ -48,7 +49,7 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
             else // Kullanıcı giriş yapmadıysa
             {
                 await _productCreateServices.CreateProductRedisAsync(dto.ImageFiles, dto);
-                await _productCreateServices.CreateOTPCode(dto.UserName);
+                token = await _productCreateServices.CreateOTPCode(dto.UserName);
                 isLogin = false;
             }
 
@@ -56,6 +57,7 @@ namespace FarmAd.Application.Features.Commands.Product.ProductCreateCommand
             {
                 IsLogin = isLogin,
                 Username = username,
+                Token = token,
                 Succeed = true
             };
         }

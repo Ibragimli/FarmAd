@@ -27,7 +27,7 @@ namespace FarmAd.Application.Features.Commands.Product.ProductAuthenticationComm
             var dto = request.ProductAuthenticationDto;
             var prdCookie = await _productCreateServices.GetProductFromRedisAsync(dto.Username);
 
-            await _authenticationService.CheckAuthenticationAsync(dto.Code, dto.Username, prdCookie.ImageFilesStr);
+            await _authenticationService.CheckAuthenticationAsync(dto.Token,dto.Code, dto.Username, prdCookie.ImageFilesStr);
 
             var images = await _productCreateServices.GetProductFromRedisAsync(dto.Username);
             var feature = await _productCreateServices.CreateProductFeature(prdCookie);

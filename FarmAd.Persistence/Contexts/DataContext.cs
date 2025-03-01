@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Infrastructure.Configurations;
+using Microsoft.AspNetCore.Identity;
 
 namespace FarmAd.Persistence.Contexts
 {
@@ -32,6 +33,8 @@ namespace FarmAd.Persistence.Contexts
         public DbSet<Payment> Payments { get; set; }
         public DbSet<ServiceDuration> ServiceDurations { get; set; }
         public DbSet<UserTerm> UserTerms { get; set; }
+
+        public DbSet<IdentityUserRole<string>> UserRoles { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

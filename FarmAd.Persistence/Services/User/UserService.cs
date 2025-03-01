@@ -115,18 +115,7 @@ namespace FarmAd.Persistence.Services.User
             }
 
         }
-        public async Task<string[]> GetRolesToUserAsync(string userIdOrUsername)
-        {
-            AppUser user = await _userManager.FindByIdAsync(userIdOrUsername);
-            if (user == null)
-                user = await _userManager.FindByNameAsync(userIdOrUsername);
-            if (user != null)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                return userRoles.ToArray();
-            }
-            return new string[] { };
-        }
+
 
         public async Task<bool> HasRolePermissionToEndpointAsync(string username, string code)
         {
@@ -148,7 +137,19 @@ namespace FarmAd.Persistence.Services.User
             }
             return false;
         }
-
+        public async Task<string[]> GetRolesToUserAsync(string userIdOrUsername)
+        {
+            AppUser user = await _userManager.FindByIdAsync(userIdOrUsername);
+            if (user == null)
+                user = await _userManager.FindByNameAsync(userIdOrUsername);
+            if (user != null)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                return userRoles.ToArray();
+            }
+            return new string[] { };
+        }
+     
         public async Task SignOutUser() { await _signInManager.SignOutAsync(); }
 
         public bool IsIdendity(string username)

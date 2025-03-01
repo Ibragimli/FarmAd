@@ -64,8 +64,6 @@ namespace FarmAd.Infrastructure.Service.Tokens
 
             return false;
         }
-
-
         public Token CreateAccesToken(int second, AppUser user)
         {
             var claims = new List<Claim>
@@ -77,7 +75,7 @@ namespace FarmAd.Infrastructure.Service.Tokens
             Token token = new Token();
             SymmetricSecurityKey symmetricSecurityKey = new(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
             SigningCredentials signingCredentials = new(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-            token.Expiration = DateTime.UtcNow.AddHours(4).AddSeconds(second);
+            token.Expiration = DateTime.UtcNow.AddSeconds(second);
             JwtSecurityToken securityToken = new(
                 audience: _configuration["Token:Audience"],
                 issuer: _configuration["Token:Issuer"],
@@ -92,7 +90,6 @@ namespace FarmAd.Infrastructure.Service.Tokens
             token.RefreshToken = CreateRefreshToken();
             return token;
         }
-
         public string CreateRefreshToken()
         {
             byte[] number = new byte[32];

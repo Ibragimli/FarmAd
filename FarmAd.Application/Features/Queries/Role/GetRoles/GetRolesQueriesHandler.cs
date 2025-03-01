@@ -23,9 +23,8 @@ namespace FarmAd.Application.Features.Queries.Role.GetRoles
             return new()
             {
                 Datas = datas,
-                TotalCount = count
+                TotalCount = count,
             };
-
         }
     }
 }

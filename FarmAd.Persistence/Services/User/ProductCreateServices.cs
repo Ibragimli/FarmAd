@@ -122,21 +122,6 @@ namespace FarmAd.Persistence.Services.User
             await _redisCacheServices.ClearAsync($"ProductVM:{username}");
         }
 
-        //public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
-        //{
-
-        //    foreach (var item in imageFiles)
-        //    {
-        //        var (filename, path) = _storageService.UploadAsync("files\\products", item); ;
-
-        //        ProductCreateDto.ImageFilesStr.Add(filename);
-        //    }
-        //    var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
-        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
-        //    ProductCreateDto.ImageFiles = null;
-        //    var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
-        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
-        //}
         public async Task CreateProductRedisAsync(List<IFormFile> imageFiles, ProductCreateDto productCreateDto)
         {
             string userKey = productCreateDto.PhoneNumber; // Və ya unikal productId istifadə et
@@ -153,12 +138,11 @@ namespace FarmAd.Persistence.Services.User
             productCreateDto.ImageFiles = null;
             var productStr = JsonConvert.SerializeObject(productCreateDto);
 
-            // Redis'e kaydet (Geçerlilik süresi: 30 dakika)
+            // Redis'e kaydet (Geçerlilik süresi: 5 dakika)
             await _redisCacheServices.SetValueAsync($"ProductImageFiles:{userKey}", productImageStr);
             await _redisCacheServices.SetValueAsync($"ProductPath:{userKey}", productPathStr);
             await _redisCacheServices.SetValueAsync($"ProductVM:{userKey}", productStr);
         }
-
         public async Task<ProductCreateDto> GetProductFromRedisAsync(string username)
         {
             // Redis'ten ProductVM key'ini oku
@@ -169,49 +153,14 @@ namespace FarmAd.Persistence.Services.User
 
             throw new CookieNotActiveException("Kodun müddəti və ya təkrar etmək limiti bitmişdir!Yenidən cəhd edin");
         }
-
-        //public ProductCreateDto GetProductCookie()
-        //{
-        //    ProductCreateDto ProductCreateDto = new ProductCreateDto();
-
-        //    //cookie
-        //    string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
-
-        //    if (ProductItem != null)
-        //        ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
-        //    else
-        //        throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
-        //    return ProductCreateDto;
-        //}
-
-        //public async Task CreateImageString(List<string> imageFiles, int ProductId)
-        //{
-        //    int i = 1;
-        //    bool ProductStatus;
-        //    foreach (var image in imageFiles)
-        //    {
-        //        ProductStatus = false;
-        //        if (i == 1)
-        //            ProductStatus = true;
-        //        ProductImage Productimage = new ProductImage
-        //        {
-        //            IsProduct = ProductStatus,
-        //            ProductId = ProductId,
-        //            Image = image,
-        //        };
-        //        await _productImageWriteRepository.AddAsync(Productimage);
-
-        //        i++;
-        //    }
-        //    await _productImageWriteRepository.SaveAsync();
-        //}
-
         public async Task<ProductFeature> CreateProductFeature(ProductCreateDto ProductDto)
         {
             await ValidateProductCreateDto(ProductDto); // ✅ Doğrulamaları merkezi olarak yap
 
             var productFeature = _mapper.Map<ProductFeature>(ProductDto);
             productFeature.ProductStatus = ProductStatus.Waiting;
+
+            #region default create
             //ProductFeature features = new ProductFeature
             //{
             //    Name = ProductDto.ProductName,
@@ -232,11 +181,8 @@ namespace FarmAd.Persistence.Services.User
             //    IsDisabled = false,
             //    ModifiedDate = DateTime.UtcNow.AddHours(4),
             //    IsDelete = false,
-
             //};
-
-
-
+            #endregion default create
             try
             {
                 await _productFeatureWriteRepository.AddAsync(productFeature);
@@ -281,7 +227,6 @@ namespace FarmAd.Persistence.Services.User
             if (string.IsNullOrWhiteSpace(productDto.Describe))
                 throw new ItemNullException("Elan təsviri boş ola bilməz!");
         }
-
         public async Task<Product> CreateProduct(ProductFeature features)
         {
             Product Product = new Product
@@ -299,7 +244,6 @@ namespace FarmAd.Persistence.Services.User
             }
             return Product;
         }
-
         public async Task<Product> CreateProductForm(ProductFeature features, List<IFormFile> imageFiles)
         {
             Product Product = new Product
@@ -312,13 +256,10 @@ namespace FarmAd.Persistence.Services.User
             return Product;
 
         }
-
-
         public void SendCode(string email, string code)
         {
             _emailServices.Send(email, "Doğrulama kodunuz", code);
         }
-
         public List<string> GetImageFilesCookie()
         {
             List<string> images = new List<string>();
@@ -330,7 +271,6 @@ namespace FarmAd.Persistence.Services.User
                 throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
             return images;
         }
-
         public async Task CreateProductUserId(string userId, int ProductId)
         {
             ProductUserId ProductUserId = new ProductUserId();
@@ -351,14 +291,68 @@ namespace FarmAd.Persistence.Services.User
             _contextAccessor.HttpContext.Response.Cookies.Delete("ProductImageFiles");
             await _userAuthenticationWriteRepository.SaveAsync();
         }
-
-        public async Task CreateOTPCode(string username)
+        public async Task<string> CreateOTPCode(string username)
         {
             //otpcode
             var code = _oTPService.CodeCreate();
             var user = await _userService.GetAsync(x => x.UserName == username);
-            var auth = await _oTPService.CreateAuthentication(code, username);
+            //var auth = await _oTPService.CreateAuthentication(code, username);
             Token token = _tokenHandler.CreateAccesToken(5, user);
+            await _oTPService.CreateAuthenticationAsync(token.AccesToken, username, code);
+            return token.AccesToken;
         }
+
+        //public void CreateProductCookie(List<IFormFile> imageFiles, ProductCreateDto ProductCreateDto)
+        //{
+
+        //    foreach (var item in imageFiles)
+        //    {
+        //        var (filename, path) = _storageService.UploadAsync("files\\products", item); ;
+
+        //        ProductCreateDto.ImageFilesStr.Add(filename);
+        //    }
+        //    var ProductImageStr = JsonConvert.SerializeObject(ProductCreateDto.ImageFilesStr);
+        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductImageFiles", ProductImageStr);
+        //    ProductCreateDto.ImageFiles = null;
+        //    var ProductStr = JsonConvert.SerializeObject(ProductCreateDto);
+        //    _contextAccessor.HttpContext.Response.Cookies.Append("ProductVM", ProductStr);
+        //} 
+
+        //public ProductCreateDto GetProductCookie()
+        //{
+        //    ProductCreateDto ProductCreateDto = new ProductCreateDto();
+
+        //    //cookie
+        //    string ProductItem = _contextAccessor.HttpContext.Request.Cookies["ProductVM"];
+
+        //    if (ProductItem != null)
+        //        ProductCreateDto = JsonConvert.DeserializeObject<ProductCreateDto>(ProductItem);
+        //    else
+        //        throw new CookieNotActiveException("Cookie-nizi aktiv edin!");
+        //    return ProductCreateDto;
+        //}
+
+        //public async Task CreateImageString(List<string> imageFiles, int ProductId)
+        //{
+        //    int i = 1;
+        //    bool ProductStatus;
+        //    foreach (var image in imageFiles)
+        //    {
+        //        ProductStatus = false;
+        //        if (i == 1)
+        //            ProductStatus = true;
+        //        ProductImage Productimage = new ProductImage
+        //        {
+        //            IsProduct = ProductStatus,
+        //            ProductId = ProductId,
+        //            Image = image,
+        //        };
+        //        await _productImageWriteRepository.AddAsync(Productimage);
+
+        //        i++;
+        //    }
+        //    await _productImageWriteRepository.SaveAsync();
+        //}
+
     }
 }
