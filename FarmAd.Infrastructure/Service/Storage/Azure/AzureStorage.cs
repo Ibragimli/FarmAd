@@ -62,17 +62,17 @@ namespace FarmAd.Infrastructure.Service.Storage.Azure
             throw new NotImplementedException();
         }
 
-        public Task<List<(string fileName, string pathOrContainerName)>> UploadAsync(string pathOrContainerName, IFormFileCollection files)
+        public Task<List<(string fileName, string pathOrContainerName)>> Upload(string pathOrContainerName, IFormFileCollection files)
         {
             throw new NotImplementedException();
         }
 
-        public (string fileName, string path) UploadAsync(string pathOrContainerName, IFormFile file)
+        public (string fileName, string path) Upload(string pathOrContainerName, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        List<(string fileName, string path)> IStorage.UploadAsync(string pathOrContainerName, IFormFileCollection files)
+        List<(string fileName, string path)> IStorage.Upload(string pathOrContainerName, IFormFileCollection files)
         {
             throw new NotImplementedException();
         }

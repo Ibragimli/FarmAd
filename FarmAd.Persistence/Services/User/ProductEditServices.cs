@@ -13,20 +13,27 @@ using FarmAd.Application.Abstractions.Services;
 using FarmAd.Persistence.Repositories.Product;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.Repositories.ProductImage;
+using FarmAd.Application.Abstractions.Storage;
+using static System.Net.Mime.MediaTypeNames;
+using FarmAd.Infrastructure.Service;
+using FarmAd.Application.DTOs.User;
+using Newtonsoft.Json;
 
 namespace FarmAd.Persistence.Services.User
 {
     public class ProductEditServices : IProductEditServices
     {
-        private readonly IImageManagerService _manageImageHelper;
+        private readonly IStorageService _storageService;
+        private readonly IImageManagerService _ımageManagerService;
         private readonly IProductImageWriteRepository _productImageWriteRepository;
         private readonly IProductImageReadRepository _productImageReadRepository;
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
 
-        public ProductEditServices(IImageManagerService manageImageHelper, IProductImageWriteRepository productImageWriteRepository, IProductImageReadRepository productImageReadRepository, IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
+        public ProductEditServices(IStorageService storageService, IImageManagerService ımageManagerService, IProductImageWriteRepository productImageWriteRepository, IProductImageReadRepository productImageReadRepository, IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
         {
-            _manageImageHelper = manageImageHelper;
+            _storageService = storageService;
+            _ımageManagerService = ımageManagerService;
             _productImageWriteRepository = productImageWriteRepository;
             _productImageReadRepository = productImageReadRepository;
             _productReadRepository = productReadRepository;
@@ -34,135 +41,157 @@ namespace FarmAd.Persistence.Services.User
         }
         public async Task ProductDisabled(int id)
         {
-            Product Product = new Product();
-            if (id != 0)
-                Product = await _productReadRepository.GetAsync(x => x.Id == id);
-
-            var time = new DateTime(0001, 01, 01, 8, 36, 44);
-
-            if (Product == null)
+            if (id == 0)
                 throw new ItemNotFoundException("Elan tapılmadı");
-            if (Product.ProductFeatures.ProductStatus != ProductStatus.Active)
+
+
+            var product = await _productReadRepository.GetAsync(x => x.Id == id);
+
+            if (product == null)
+                throw new ItemNotFoundException("Elan tapılmadı");
+
+            if (product.ProductFeatures.ProductStatus != ProductStatus.Active)
                 throw new ItemFormatException("Xəta baş verdi");
 
-            Product.ProductFeatures.ProductStatus = ProductStatus.DeActive;
-            Product.ProductFeatures.IsPremium = false;
-            Product.ProductFeatures.IsVip = false;
-            Product.ProductFeatures.ExpirationDatePremium = time;
-            Product.ProductFeatures.ExpirationDateVip = time;
-            Product.ProductFeatures.ExpirationDateActive = time;
+            product.ProductFeatures.ProductStatus = ProductStatus.DeActive;
+            product.ProductFeatures.IsPremium = false;
+            product.ProductFeatures.IsVip = false;
+            product.ProductFeatures.ExpirationDatePremium = DateTime.MinValue;
+            product.ProductFeatures.ExpirationDateVip = DateTime.MinValue;
+            product.ProductFeatures.ExpirationDateActive = DateTime.MinValue;
+
             await _productWriteRepository.SaveAsync();
         }
         public async Task ProductActive(int id)
         {
-            Product Product = new Product();
-            DateTime now = DateTime.UtcNow;
-            if (id != 0)
-                Product = await _productReadRepository.GetAsync(x => x.Id == id);
+            if (id == 0)
+                throw new ArgumentException("İD düzgün deyil!");
 
-            if (Product == null)
+            var product = await _productReadRepository.GetAsync(x => x.Id == id);
+
+            if (product == null)
                 throw new ItemNotFoundException("Elan tapılmadı");
-            if (Product.ProductFeatures.ExpirationDateDisabled < now)
+
+            DateTime now = DateTime.UtcNow;
+
+            if (product.ProductFeatures.ExpirationDateDisabled < now)
                 throw new ExpirationDateException("Elanın müddəti bitmişdir");
-            if (Product.ProductFeatures.ProductStatus != ProductStatus.DeActive)
+
+            if (product.ProductFeatures.ProductStatus != ProductStatus.DeActive)
                 throw new ItemFormatException("Xəta baş verdi");
 
-            Product.ProductFeatures.ProductStatus = ProductStatus.Active;
-            Product.ProductFeatures.ExpirationDateActive = now.AddDays(30);
-            await _productWriteRepository.SaveAsync();
+            product.ProductFeatures.ProductStatus = ProductStatus.Active;
+            product.ProductFeatures.ExpirationDateActive = now.AddDays(30);
 
+            await _productWriteRepository.SaveAsync();
         }
-        public void ProductEditCheck(Product Product)
+        public void ProductEditCheck(ProductEditDto product)
         {
-            if (Product.ProductFeatures.Describe == null)
+            if (product == null)
+                throw new ArgumentNullException(nameof(product), "Məhsul null ola bilməz!");
+
+            //if (product.ProductFeatures == null)
+            //    throw new ArgumentNullException(nameof(product.ProductFeatures), "ProductFeatures null ola bilməz!");
+
+            if (string.IsNullOrWhiteSpace(product.Describe))
                 throw new ItemNullException("Təsvir hissəsi boş ola bilməz!");
-            if (Product.ProductFeatures.Name == null)
+
+            if (string.IsNullOrWhiteSpace(product.Name))
                 throw new ItemNullException("Elanın adı boş ola bilməz!");
-            if (Product.ProductFeatures.Price == 0 || Product.ProductFeatures.Price == null)
+
+            if (product.Price <= 0)
                 throw new ItemNullException("Elanın qiyməti 0₼-dan çox olmalıdır!");
         }
-
-        public async Task ProductEdit(Product Product)
+        public async Task ProductEdit(ProductEditDto productDto)
         {
-            bool checkBool = false;
-            if (Product == null)
+            if (productDto == null || productDto.Id == 0)
                 throw new ItemNotFoundException("Elan tapılmadı");
 
-            if (Product.Id == 0)
+            Product oldProduct = await _productReadRepository.GetAsync(x => x.Id == productDto.Id, "ProductFeatures", "ProductImages");
+
+            if (oldProduct == null)
                 throw new ItemNotFoundException("Elan tapılmadı");
-            var oldProduct = await _productReadRepository.GetAsync(x => x.Id == Product.Id, "ProductFeatures", "ProductImages");
 
-            if (Product.ProductImageFile != null)
-                _manageImageHelper.ValidateProduct(Product.ProductImageFile);
-            if (Product.ImageFiles != null)
-                _manageImageHelper.ValidateImages(Product.ImageFiles);
+            bool hasChanges = false;
 
+            if (productDto.ImageFiles != null)
+                _ımageManagerService.ValidateImages(productDto.ImageFiles);
 
-            if (Product.ProductFeatures.SubCategoryId != 0 && oldProduct.ProductFeatures.SubCategoryId != Product.ProductFeatures.SubCategoryId)
+            // Məlumatların dəyişiklik yoxlanışı və yenilənməsi
+            if (oldProduct.ProductFeatures.SubCategoryId != 0 && oldProduct.ProductFeatures.SubCategoryId != oldProduct.ProductFeatures.SubCategoryId)
             {
-                oldProduct.ProductFeatures.SubCategoryId = Product.ProductFeatures.SubCategoryId;
-                checkBool = true;
+                oldProduct.ProductFeatures.SubCategoryId = productDto.SubCategoryId;
+                hasChanges = true;
             }
-            if (Product.ProductFeatures.Name != null && oldProduct.ProductFeatures.Name != Product.ProductFeatures.Name)
+
+            if (!string.IsNullOrWhiteSpace(productDto.Name) && oldProduct.ProductFeatures.Name != productDto.Name)
             {
-                oldProduct.ProductFeatures.Name = Product.ProductFeatures.Name;
-                checkBool = true;
+                oldProduct.ProductFeatures.Name = productDto.Name;
+                hasChanges = true;
             }
-            if (Product.ProductFeatures.Describe != null && oldProduct.ProductFeatures.Describe != Product.ProductFeatures.Describe)
+
+            if (!string.IsNullOrWhiteSpace(productDto.Describe) && oldProduct.ProductFeatures.Describe != productDto.Describe)
             {
-                oldProduct.ProductFeatures.Describe = Product.ProductFeatures.Describe;
-                checkBool = true;
+                oldProduct.ProductFeatures.Describe = productDto.Describe;
+                hasChanges = true;
             }
-            if (Product.ProductFeatures.Price != 0 && oldProduct.ProductFeatures.Price != Product.ProductFeatures.Price)
+
+            if (productDto.Price > 0 && oldProduct.ProductFeatures.Price != productDto.Price)
             {
-                oldProduct.ProductFeatures.Price = Product.ProductFeatures.Price;
-                checkBool = true;
+                oldProduct.ProductFeatures.Price = productDto.Price;
+                hasChanges = true;
             }
-            if (oldProduct.ProductFeatures.PriceCurrency != Product.ProductFeatures.PriceCurrency)
+
+            if (oldProduct.ProductFeatures.PriceCurrency != productDto.PriceCurrency)
             {
-                oldProduct.ProductFeatures.PriceCurrency = Product.ProductFeatures.PriceCurrency;
-                checkBool = true;
+                oldProduct.ProductFeatures.PriceCurrency = productDto.PriceCurrency;
+                hasChanges = true;
             }
-            if (oldProduct.ProductFeatures.IsShipping != Product.ProductFeatures.IsShipping)
+
+            if (oldProduct.ProductFeatures.IsShipping != productDto.IsShipping)
             {
-                oldProduct.ProductFeatures.IsShipping = Product.ProductFeatures.IsShipping;
-                checkBool = true;
+                oldProduct.ProductFeatures.IsShipping = productDto.IsShipping;
+                hasChanges = true;
             }
-            if (oldProduct.ProductFeatures.IsNew != Product.ProductFeatures.IsNew)
+
+            if (oldProduct.ProductFeatures.IsNew != productDto.IsNew)
             {
-                oldProduct.ProductFeatures.IsNew = Product.ProductFeatures.IsNew;
-                checkBool = true;
+                oldProduct.ProductFeatures.IsNew = productDto.IsNew;
+                hasChanges = true;
             }
-            int deleteCount = DeleteImages(Product, oldProduct);
+
+            // Şəkil dəyişikliklərini yoxla
+            int deleteCount = await DeleteImages(productDto, oldProduct);
             if (deleteCount > 0)
-                checkBool = true;
-            if (ProductImageChange(Product, oldProduct) == 1)
-                checkBool = true;
-            if (await CreateImageFormFile(Product.ImageFiles, Product.Id, deleteCount) == 1)
-                checkBool = true;
+                hasChanges = true;
 
-            if (checkBool)
+            if (await PosterImageChange(productDto, oldProduct) == 1)
+                hasChanges = true;
+
+            if (await CreateImagesFormFile(productDto.ImageFiles, productDto.Id, deleteCount) == 1)
+                hasChanges = true;
+
+            // Dəyişiklik baş veribsə, yadda saxla
+            if (hasChanges)
             {
                 oldProduct.ModifiedDate = DateTime.UtcNow.AddHours(4);
                 oldProduct.ProductFeatures.ProductStatus = ProductStatus.Waiting;
                 await _productWriteRepository.SaveAsync();
-
             }
-
-
         }
-        private int ProductImageChange(Product Product, Product ProductExist)
+        private async Task<int> PosterImageChange(ProductEditDto productDto, Product productExist)
         {
-            if (Product.ProductImageFile != null)
+            if (productDto.PosterImageFile != null)
             {
-                var ProductImageFile = Product.ProductImageFile;
+                var productImageFile = productDto.PosterImageFile;
 
-                ProductImage ProductImage = ProductExist.ProductImages.FirstOrDefault(x => x.IsProduct);
+                ProductImage ProductImage = productExist.ProductImages.FirstOrDefault(x => x.IsProduct);
 
                 if (ProductImage == null) throw new ImageNullException("Şəkil tapılmadı!");
 
-                string filename = _manageImageHelper.FileSave(ProductImageFile, "Product");
-                _manageImageHelper.DeleteFile(ProductImage.Image, "Product");
+                await _storageService.DeleteAsync("files\\Products", ProductImage.Image);
+
+                var (filename, path) = _storageService.Upload("files\\Products", productImageFile);
                 ProductImage.Image = filename;
                 ProductImage.IsProduct = true;
                 return 1;
@@ -170,82 +199,58 @@ namespace FarmAd.Persistence.Services.User
             return 0;
 
         }
-        private int DeleteImages(Product Product, Product ProductExist)
+        private async Task<int> DeleteImages(ProductEditDto productDto, Product productExist)
         {
             int i = 0;
-            ICollection<ProductImage> ProductImages = ProductExist.ProductImages;
-            if (Product.ProductImagesIds != null)
+            ICollection<ProductImage> productImages = productExist.ProductImages;
+
+            List<int> imageIds = productDto.ProductImagesIds
+                            .Split(',') // Stringi virgüllə ayırırıq
+                            .Select(id => int.Parse(id)) // Her elementi int'e çeviririk
+                            .ToList();
+
+            if (productDto.ProductImagesIds != null)
             {
-                foreach (var image in ProductImages.ToList().Where(x => x.IsDelete == false && !x.IsProduct && !Product.ProductImagesIds.Contains(x.Id)))
+                foreach (var image in productImages.ToList()
+                    .Where(x => !x.IsDelete && !x.IsProduct && !imageIds.Contains(x.Id)))
                 {
-                    _manageImageHelper.DeleteFile(image.Image, "Product");
-                    ProductExist.ProductImages.Remove(image);
+                    await _storageService.DeleteAsync("files\\Products", image.Image);
+                    productExist.ProductImages.Remove(image);
                     i++;
                 }
-                ProductImages.ToList().RemoveAll(x => !Product.ProductImagesIds.Contains(x.Id));
-                return i;
             }
-            else
+            else if (productDto.ImageFiles?.Count() > 0 || productImages.Any(x => !x.IsProduct))
             {
-
-                if (Product.ImageFiles?.Count() > 0)
+                foreach (var item in productImages.ToList().Where(x => !x.IsDelete && !x.IsProduct))
                 {
-                    foreach (var item in ProductImages.ToList().Where(x => !x.IsDelete && !x.IsProduct))
-                    {
-                        _manageImageHelper.DeleteFile(item.Image, "Product");
-                        ProductExist.ProductImages.Remove(item);
-                        i++;
-                    }
-                    return i;
+                    await _storageService.DeleteAsync("files\\Products", item.Image);
+                    productExist.ProductImages.Remove(item);
+                    i++;
                 }
-                else if (ProductImages.Any(x => !x.IsProduct))
-                {
-                    foreach (var item in ProductImages.ToList().Where(x => !x.IsDelete && !x.IsProduct))
-                    {
-                        _manageImageHelper.DeleteFile(item.Image, "Product");
-                        ProductExist.ProductImages.Remove(item);
-                        i++;
-                    }
-                    return i;
-                }
-                else if (ProductImages.Any(x => x.IsProduct))
-                {
-                    return i;
-                }
-                else throw new ImageCountException("Axırıncı şəkil silinə bilməz!");
             }
+            else if (!productImages.Any(x => x.IsProduct))
+                throw new ImageCountException("Axırıncı şəkil silinə bilməz!");
 
+            return i;
         }
-        private async Task<int> CreateImageFormFile(List<IFormFile> imageFiles, int ProductId, int deleteCount)
+        private async Task<int> CreateImagesFormFile(List<IFormFile> imageFiles, int productId, int deleteCount)
         {
-            int countImage = await _productImageReadRepository.GetTotalCountAsync(x => x.ProductId == ProductId && !x.IsProduct);
-            int i = 0;
+            int countImage = await _productImageReadRepository.GetTotalCountAsync(x => x.ProductId == productId && !x.IsProduct);
+            int maxImageCount = 8;
+            int remainingSlots = maxImageCount - countImage - deleteCount;
 
-            if (countImage < 9)
+            if (remainingSlots <= 0) throw new ImageCountException("Maksimum 8 şəkil əlavə edə bilərsiniz!");
+
+            List<ProductImage> imageList = new();
+            if (imageFiles != null)
+                imageList = _ımageManagerService.AddImages(productId, imageFiles,true);
+            if (imageList.Count > 0)
             {
-                if (imageFiles != null)
-                {
-                    i = 8 - countImage - deleteCount;
-                    if (i == 0)
-                        throw new ImageCountException("Maksimum 8 şəkil əlavə edə bilərsiniz!");
-                    foreach (var image in imageFiles)
-                    {
-                        if (i != 0)
-                        {
-                            ProductImage Productimage = new ProductImage
-                            {
-                                IsProduct = false,
-                                ProductId = ProductId,
-                                Image = _manageImageHelper.FileSave(image, "Product"),
-                            };
-                            await _productImageWriteRepository.AddAsync(Productimage);
-                            i--;
-                        }
-                    }
-                    return 1;
-                }
+                await _productImageWriteRepository.AddRangeAsync(imageList);
+                return 1;
             }
             return 0;
         }
+
     }
 }

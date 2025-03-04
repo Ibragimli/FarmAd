@@ -69,6 +69,7 @@ namespace FarmAd.Persistence
             services.AddScoped<IProductDeleteServices, ProductDeleteServices>();
             services.AddScoped<IProductUserIdReadRepository, ProductUserIdReadRepository>();
             services.AddScoped<IProductFeatureServices, ProductFeatureServices>();
+            services.AddScoped<IProductEditServices, ProductEditServices>();
 
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IOTPService, OTPService>();

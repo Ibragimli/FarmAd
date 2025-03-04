@@ -21,10 +21,10 @@ namespace FarmAd.Infrastructure.Service.Storage
 
         public async Task DeleteAsync(string pathOrContainerName, string fileName)
              => await _storage.DeleteAsync(pathOrContainerName, fileName);
-        public List<(string fileName, string path)> UploadAsync(string pathOrContainerName, IFormFileCollection files)
-            => _storage.UploadAsync(pathOrContainerName, files);
-        public (string fileName, string path) UploadAsync(string pathOrContainerName, IFormFile file)
-            => _storage.UploadAsync(pathOrContainerName, file);
+        public List<(string fileName, string path)> Upload(string pathOrContainerName, IFormFileCollection files)
+            => _storage.Upload(pathOrContainerName, files);
+        public (string fileName, string path) Upload(string pathOrContainerName, IFormFile file)
+            => _storage.Upload(pathOrContainerName, file);
 
 
     }

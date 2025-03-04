@@ -9,18 +9,18 @@ namespace FarmAd.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "Admin")]
+    //[Authorize(AuthenticationSchemes = "Admin")]
     public class ApplicationServicesController : ControllerBase
     {
-        private readonly IApplicationService _applicationService;
+        readonly IApplicationService _applicationService;
 
         public ApplicationServicesController(IApplicationService applicationService)
         {
             _applicationService = applicationService;
         }
 
-        [HttpGet]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Menu = "Application Services", Definition = "Get Authorize Definiton")]
+        [HttpGet("GetAuthorizeDefinitionEndpoints")]
+        //[AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Authorize Definition Endpoints", Menu = "Application Services")]
         public IActionResult GetAuthorizeDefinitionEndpoints()
         {
             var datas = _applicationService.GetAuthorizeDefinitionEndpoint(typeof(Program));

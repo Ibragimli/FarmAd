@@ -78,43 +78,16 @@ namespace FarmAd.Persistence.Services.User
         }
         public async Task CreateImagesAsync(List<IFormFile> imageFiles, int productId)
         {
-            List<ProductImage> productImages = new();
-
-            for (int i = 0; i < imageFiles.Count; i++)
-            {
-                var (fileName, path) = _storageService.UploadAsync("files\\products", imageFiles[i]);
-                productImages.Add(new ProductImage
-                {
-                    IsProduct = i == 0, // İlk resim için true, diğerleri false olacak
-                    ProductId = productId,
-                    Image = fileName,
-                    Path = path
-                });
-            }
+            List<ProductImage> productImages = _manageImageHelper.AddImages(productId, imageFiles);
             await _productImageWriteRepository.AddRangeAsync(productImages);
             await _productImageWriteRepository.SaveAsync();
         }
 
         public async Task CreateImagesAsync(List<string> imageFiles, List<string> imagesPath, int productId, string username)
         {
-            List<ProductImage> productImages = new();
 
-            for (int i = 0; i < imageFiles.Count; i++)
-            {
-                var imageFile = imageFiles[i];
-                var imagePath = imagesPath[i];
+            List<ProductImage> productImages = _manageImageHelper.AddImages(productId, imageFiles, imagesPath);
 
-                ProductImage productImage = new ProductImage
-                {
-                    IsProduct = i == 0,
-                    Path = imagePath,
-                    Image = imageFile,
-                    ProductId = productId
-                };
-
-                // Resmi veritabanına kaydet
-                productImages.Add(productImage);
-            }
             await _productImageWriteRepository.AddRangeAsync(productImages);
             await _productImageWriteRepository.SaveAsync();
             await _redisCacheServices.ClearAsync($"ProductImageFiles:{username}");
@@ -128,7 +101,7 @@ namespace FarmAd.Persistence.Services.User
 
             foreach (var item in imageFiles)
             {
-                var (filename, path) = _storageService.UploadAsync("files\\products", item);
+                var (filename, path) = _storageService.Upload("files\\products", item);
                 productCreateDto.ImageFilesStr.Add(filename);
                 productCreateDto.ImagePathStr.Add(path);
             }
@@ -297,7 +270,7 @@ namespace FarmAd.Persistence.Services.User
             var code = _oTPService.CodeCreate();
             var user = await _userService.GetAsync(x => x.UserName == username);
             //var auth = await _oTPService.CreateAuthentication(code, username);
-            Token token = _tokenHandler.CreateAccesToken(5, user);
+            Token token = _tokenHandler.CreateAccesToken(320, user);
             await _oTPService.CreateAuthenticationAsync(token.AccesToken, username, code);
             return token.AccesToken;
         }

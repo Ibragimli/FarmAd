@@ -49,7 +49,7 @@ namespace FarmAd.Persistence.Service.Area
 
             Category newCategory = new Category();
 
-            var image = _storageService.UploadAsync("files\\categories", categoryCreateDto.Image);
+            var image = _storageService.Upload("files\\categories", categoryCreateDto.Image);
 
             newCategory.Name = categoryCreateDto.Name;
             newCategory.Image = image.fileName;
@@ -73,7 +73,7 @@ namespace FarmAd.Persistence.Service.Area
             if (categoryUpdateDto.Image != null)
                 _manageImageHelper.ValidateProduct(categoryUpdateDto.Image);
 
-            var newImage = _storageService.UploadAsync("files\\categories", categoryUpdateDto.Image);
+            var newImage = _storageService.Upload("files\\categories", categoryUpdateDto.Image);
 
             oldCategory.Name = categoryUpdateDto.Name;
             oldCategory.Image = newImage.fileName;

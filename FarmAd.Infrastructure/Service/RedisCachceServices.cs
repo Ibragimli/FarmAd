@@ -19,7 +19,7 @@ namespace FarmAd.Infrastructure.Service
 
         public async Task<bool> SetValueAsync(string key, string value)
         {
-            return await _database.StringSetAsync(key, value, TimeSpan.FromMinutes(6));
+            return await _database.StringSetAsync(key, value, TimeSpan.FromMinutes(1));
         }
 
         public async Task<string> GetValueAsync(string key)

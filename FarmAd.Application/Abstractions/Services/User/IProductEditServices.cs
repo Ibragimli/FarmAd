@@ -1,4 +1,5 @@
-﻿using FarmAd.Domain.Entities;
+﻿using FarmAd.Application.DTOs.User;
+using FarmAd.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ namespace FarmAd.Application.Abstractions.Services.User
     {
         public Task ProductDisabled(int id);
         public Task ProductActive(int id);
-        public void ProductEditCheck(Product Product);
-        public Task ProductEdit(Product Product );
+        public void ProductEditCheck(ProductEditDto Product);
+        public Task ProductEdit(ProductEditDto Product );
     }
 }

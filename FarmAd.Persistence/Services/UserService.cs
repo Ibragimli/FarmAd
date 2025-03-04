@@ -16,7 +16,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Persistence.Services.User
+namespace FarmAd.Persistence.Services
 {
     public class UserService : IUserService
     {
@@ -122,7 +122,7 @@ namespace FarmAd.Persistence.Services.User
             var userRoles = await GetRolesToUserAsync(username);
             if (!userRoles.Any())
                 return false;
-            FarmAd.Domain.Entities.Endpoint? endpoint = await _endpointReadRepository.Table.Include(e => e.Roles).FirstOrDefaultAsync(e => e.Code == code);
+            Domain.Entities.Endpoint? endpoint = await _endpointReadRepository.Table.Include(e => e.Roles).FirstOrDefaultAsync(e => e.Code == code);
             if (endpoint == null)
                 return false;
 
@@ -149,7 +149,7 @@ namespace FarmAd.Persistence.Services.User
             }
             return new string[] { };
         }
-     
+
         public async Task SignOutUser() { await _signInManager.SignOutAsync(); }
 
         public bool IsIdendity(string username)

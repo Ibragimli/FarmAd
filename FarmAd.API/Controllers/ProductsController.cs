@@ -4,9 +4,11 @@ using FarmAd.Application.Enums;
 using FarmAd.Application.Features.Commands.Product.ProductAuthenticationCommand;
 using FarmAd.Application.Features.Commands.Product.ProductCreateCommand;
 using FarmAd.Application.Features.Commands.Product.ProductDeleteCommand;
+using FarmAd.Application.Features.Commands.Product.ProductEditCommand;
 using FarmAd.Application.Features.Queries.Product.GetAllProducts;
 using FarmAd.Application.Features.Queries.Role.GetRoles;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,14 +37,26 @@ namespace FarmAd.API.Controllers
             ProductCreateCommandResponse response = await _mediator.Send(request);
             return Ok(response);
         }
+
+
+
+
+        [HttpPut("EditProduct")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        public async Task<IActionResult> EditProduct([FromForm] ProductEditCommandRequest request)
+        {
+            ProductEditCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
         [HttpPost("ProductAuthentication")]
         public async Task<IActionResult> ProductAuthentication([FromForm] ProductAuthenticationCommandRequest request)
         {
             ProductAuthenticationCommandResponse response = await _mediator.Send(request);
             return Ok(response);
         }
-
+       
         [HttpDelete("DeleteProduct/{Id}")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
         public async Task<IActionResult> DeleteProduct([FromRoute] ProductDeleteCommandRequest request)
         {
             ProductDeleteCommandResponse response = await _mediator.Send(request);

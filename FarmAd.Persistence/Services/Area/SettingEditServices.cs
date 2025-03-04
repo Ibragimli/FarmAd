@@ -52,7 +52,7 @@ namespace FarmAd.Persistence.Service.Area
                 lastSetting.KeyImageFile = SettingEdit.KeyImageFile;
                 _ımageManagerService.ValidateProduct(lastSetting.KeyImageFile);
                 await _storageService.DeleteAsync("files\\settings", lastSetting.Value);
-                var (filename, path) = _storageService.UploadAsync("files\\settings", lastSetting.KeyImageFile);
+                var (filename, path) = _storageService.Upload("files\\settings", lastSetting.KeyImageFile);
                 lastSetting.Value = filename;
                 lastSetting.ImagePath = path;
                 lastSetting.ModifiedDate = DateTime.UtcNow.AddHours(4);

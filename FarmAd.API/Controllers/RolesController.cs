@@ -25,7 +25,7 @@ namespace FarmAd.API.Controllers
             _mediator = mediator;
         }
         [HttpGet("GetRoles")]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles", Menu = AuthorizeDefinationConstants.Roles)]
+        //[AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles", Menu = AuthorizeDefinationConstants.Roles)]
         public async Task<IActionResult> GetRoles([FromBody] GetRolesQueriesRequest getRolesQueryRequest)
         {
             GetRolesQueriesResponse response = await _mediator.Send(getRolesQueryRequest);
@@ -33,7 +33,7 @@ namespace FarmAd.API.Controllers
         }
    
         [HttpGet("CheckAuth")]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Check value", Menu = AuthorizeDefinationConstants.Roles)]
+        //[AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Check value", Menu = AuthorizeDefinationConstants.Roles)]
         public IActionResult CheckAuth()
         {
             var username = User.Identity?.Name;
@@ -43,7 +43,7 @@ namespace FarmAd.API.Controllers
         }
         
         [HttpGet("GetRole/{Id}")]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Role By Id", Menu = AuthorizeDefinationConstants.Roles)]
+        //[AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Role By Id", Menu = AuthorizeDefinationConstants.Roles)]
         public async Task<IActionResult> GetRole([FromRoute] GetRoleByIdQueryRequest getRoleByIdQueryRequest)
         {
             GetRoleByIdQueryResponse response = await _mediator.Send(getRoleByIdQueryRequest);

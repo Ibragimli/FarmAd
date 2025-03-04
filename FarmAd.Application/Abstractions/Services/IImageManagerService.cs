@@ -1,6 +1,7 @@
 ﻿using FarmAd.Application.Abstractions.Helpers;
 using FarmAd.Application.Exceptions;
 using FarmAd.Application.Repositories.ImageSetting;
+using FarmAd.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,14 @@ namespace FarmAd.Application.Abstractions.Services
 {
     public interface IImageManagerService
     {
-        public string GetValue(string key);
-        public int GetValueInt(string key);
-        public void ValidateProduct(IFormFile ProductImageFile);
+        Task<string> GetValue(string key);
+        Task<int> GetValueInt(string key);
+        Task ValidateProduct(IFormFile ProductImageFile);
         public void ValidateImages(List<IFormFile> Images);
-        public string FileSave(IFormFile Image, string folderName);
-        public void DeleteFile(string image, string folderName);
+        ProductImage AddImage(int productId, IFormFile image);
+        List<ProductImage> AddImages(int productId, List<IFormFile> images, bool isPoster = false);
+        List<ProductImage> AddImages(int productId, List<string> imageFiles, List<string> imagesPath, bool isPoster = false);
+
+
     }
 }

@@ -26,7 +26,7 @@ namespace FarmAd.Infrastructure.Service.Storage.Local
             return directory.GetFiles().Select(f => f.Name).ToList();
         }
 
-        public List<(string fileName, string path)> UploadAsync(string pathOrContainer, IFormFileCollection files)
+        public List<(string fileName, string path)> Upload(string pathOrContainer, IFormFileCollection files)
         {
             List<(string fileName, string path)> datas = new();
 
@@ -38,7 +38,7 @@ namespace FarmAd.Infrastructure.Service.Storage.Local
             return datas;
         }
 
-        public (string fileName, string path) UploadAsync(string pathOrContainer, IFormFile file)
+        public (string fileName, string path) Upload(string pathOrContainer, IFormFile file)
         {
             return _fileManager.Save(pathOrContainer, file);
         }

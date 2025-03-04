@@ -47,7 +47,7 @@ builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
-    options.Filters.Add<RolePermissionFilter>();
+    //options.Filters.Add<RolePermissionFilter>();
 })
     .AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>())
     .ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true);

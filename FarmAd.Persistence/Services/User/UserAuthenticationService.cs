@@ -95,6 +95,31 @@ namespace FarmAd.Persistence.Services.User
         //    }
         //}
 
+        public async Task<bool> CheckAuthenticationAsync(string token, string enteredCode, string phoneNumber)
+        {
+
+            // Hər istifadəçi üçün unikal Redis açarı
+            string redisKey = $"Auth:{phoneNumber}";
+
+            // Redis-dən saxlanılan dəyəri alırıq (əgər müddət bitibsə, AnyCode metodu istisna atacaq)
+            string storedValue = await _redisCacheServices.GetValueAsync(redisKey);
+            if (string.IsNullOrEmpty(storedValue))
+                await _redisCacheServices.ClearAsync(redisKey);
+
+            // OTP servisindən istifadə edərək kod, token və retry sayını ayırırıq
+            var (authToken, storedCode, attemptCount) = _oTPService.SplitRedisCode(storedValue);
+
+            // Əgər token verilibsə və Redis-dən alınan token uyğun gəlmirsə
+            if (!string.IsNullOrEmpty(token) && authToken != token)
+                throw new AuthenticationCodeException("Giriş icazəniz yoxdur!");
+
+
+            // Yoxlama prosesini həyata keçiririk
+            bool isSuccess = await CheckLoginProcess(enteredCode, authToken, phoneNumber, storedCode, attemptCount, redisKey);
+
+            return isSuccess;
+        }
+
         public async Task<bool> CheckAuthenticationAsync(string token, string enteredCode, string phoneNumber, List<string> images)
         {
 
@@ -105,22 +130,26 @@ namespace FarmAd.Persistence.Services.User
             string storedValue = await AnyCode(phoneNumber, redisKey, images);
 
             // OTP servisindən istifadə edərək kod, token və retry sayını ayırırıq
-            var (authToken,storedCode, attemptCount) = _oTPService.SplitRedisCode(storedValue);
+            var (authToken, storedCode, attemptCount) = _oTPService.SplitRedisCode(storedValue);
 
             // Əgər token verilibsə və Redis-dən alınan token uyğun gəlmirsə
             if (!string.IsNullOrEmpty(token) && authToken != token)
                 throw new AuthenticationCodeException("Giriş icazəniz yoxdur!");
 
 
+            //bool isSuccess = await CheckProcess(enteredCode, authToken, phoneNumber, images, storedCode, attemptCount, redisKey);
+
             // Yoxlama prosesini həyata keçiririk
-            bool succeed = await CheckProcess(enteredCode, authToken, phoneNumber, images, storedCode, attemptCount, redisKey);
-            return succeed;
+            bool isSuccess = await CheckProductCreationProcess(enteredCode, authToken, phoneNumber, images, storedCode, attemptCount, redisKey);
+
+            return isSuccess;
         }
 
         public async Task<bool> CheckAuthenticationAsync(string enteredCode, string phoneNumber, List<string> images)
         {
             return await CheckAuthenticationAsync(null, enteredCode, phoneNumber, images);
         }
+
         private async Task<string> AnyCode(string phoneNumber, string redisKey, List<string> images)
         {
             // Redis-dən saxlanılan dəyəri alırıq
@@ -140,88 +169,98 @@ namespace FarmAd.Persistence.Services.User
             }
             return storedValue;
         }
-        private async Task<bool> CheckProcess(string enteredCode, string? authToken, string phoneNumber, List<string> images, string storedCode, int attemptCount, string redisKey)
+        //private async Task<bool> CheckProcess(string enteredCode, string? authToken, string phoneNumber, List<string> images, string storedCode, int attemptCount, string redisKey)
+        //{
+        //    bool succeed = false;
+        //    string updatedValue;
+        //    // Girilən kod düzgün deyil
+        //    if (storedCode != enteredCode)
+        //    {
+        //        if (attemptCount > 1)
+        //        {
+        //            attemptCount--;
+        //            // Yenilənmiş dəyəri Redis-ə yazırıq (format: "kod|token|retry")
+        //            if (!string.IsNullOrEmpty(authToken))
+        //                updatedValue = $"{authToken}|{storedCode}|{attemptCount}";
+        //            else
+        //                updatedValue = $"{storedCode}|{attemptCount}";
+
+        //            await _redisCacheServices.SetValueAsync(redisKey, updatedValue);
+        //            throw new AuthenticationCodeException("Kod yanlışdır! Qalan cəhd sayı: " + attemptCount);
+        //        }
+        //        else
+        //        {
+        //            // Retry sayı 0 olduqda: bütün şəkilləri sil və əlaqədar Redis açarlarını təmizləyirik
+        //            foreach (var image in images)
+        //            {
+        //                await _storageService.DeleteAsync("files\\products", image);
+        //            }
+        //            await _redisCacheServices.ClearAsync($"ProductVM:{phoneNumber}");
+        //            await _redisCacheServices.ClearAsync($"ProductImageFiles:{phoneNumber}");
+        //            await _redisCacheServices.ClearAsync($"ProductPath:{phoneNumber}");
+        //            await _redisCacheServices.ClearAsync(redisKey);
+        //            throw new AuthenticationCodeException("Kod yanlışdır! Təkrar etmə limiti bitmişdir.");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Kod düzgün daxil edilibsə, Redis açarını təmizləyirik və true qaytarırıq
+        //        await _redisCacheServices.ClearAsync(redisKey);
+        //        return succeed = true;
+        //    }
+        //}
+
+        private async Task<bool> ValidateCodeAsync(string enteredCode, string storedCode, int attemptCount, string redisKey, string? authToken = null)
         {
-            bool succeed = false;
-            string updatedValue;
-            // Girilən kod düzgün deyil
             if (storedCode != enteredCode)
             {
                 if (attemptCount > 1)
                 {
                     attemptCount--;
-                    // Yenilənmiş dəyəri Redis-ə yazırıq (format: "kod|token|retry")
-                    if (!string.IsNullOrEmpty(authToken))
-                        updatedValue = $"{authToken}|{storedCode}|{attemptCount}";
-                    else
-                        updatedValue = $"{storedCode}|{attemptCount}";
+                    string updatedValue = !string.IsNullOrEmpty(authToken)
+                        ? $"{authToken}|{storedCode}|{attemptCount}"
+                        : $"{storedCode}|{attemptCount}";
 
                     await _redisCacheServices.SetValueAsync(redisKey, updatedValue);
                     throw new AuthenticationCodeException("Kod yanlışdır! Qalan cəhd sayı: " + attemptCount);
                 }
-                else
-                {
-                    // Retry sayı 0 olduqda: bütün şəkilləri sil və əlaqədar Redis açarlarını təmizləyirik
-                    foreach (var image in images)
-                    {
-                        await _storageService.DeleteAsync("files\\products", image);
-                    }
-                    await _redisCacheServices.ClearAsync($"ProductVM:{phoneNumber}");
-                    await _redisCacheServices.ClearAsync($"ProductImageFiles:{phoneNumber}");
-                    await _redisCacheServices.ClearAsync($"ProductPath:{phoneNumber}");
-                    await _redisCacheServices.ClearAsync(redisKey);
-                    throw new AuthenticationCodeException("Kod yanlışdır! Təkrar etmə limiti bitmişdir.");
-                }
+                return false;
             }
-            else
-            {
-                // Kod düzgün daxil edilibsə, Redis açarını təmizləyirik və true qaytarırıq
-                await _redisCacheServices.ClearAsync(redisKey);
-                return succeed = true;
-            }
+
+            await _redisCacheServices.ClearAsync(redisKey);
+            return true;
         }
 
-        //public async Task<UserAuthentication> CheckAuthenticationAsync(string code, string phoneNumber, List<string> images)
-        //{
-        //    TimeSpan now = DateTime.UtcNow.AddHours(4).TimeOfDay;
+        private async Task<bool> CheckLoginProcess(string enteredCode, string? authToken, string phoneNumber, string storedCode, int attemptCount, string redisKey)
+        {
+            bool isValid = await ValidateCodeAsync(enteredCode, storedCode, attemptCount, redisKey, authToken);
 
-        //    UserAuthentication authentication = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Code == code && x.Username == phoneNumber);
-        //    UserAuthentication authenticationCount = await _userAuthenticationReadRepository.GetAsync(x => x.IsDisabled == false && x.Username == phoneNumber);
+            if (!isValid)
+                throw new AuthenticationCodeException("Kod yanlışdır! Təkrar etmə limiti bitmişdir.");
 
+            return true;
+        }
+        private async Task<bool> CheckProductCreationProcess(string enteredCode, string? authToken, string phoneNumber, List<string> images, string storedCode, int attemptCount, string redisKey)
+        {
+            bool isValid = await ValidateCodeAsync(enteredCode, storedCode, attemptCount, redisKey, authToken);
 
-        //    //Kodun müddəti bitmişdir
-        //    if (authentication != null && authentication?.ExpirationDate.TimeOfDay < now)
-        //    {
-        //        foreach (var image in images)
-        //        {
-        //            await _storageService.DeleteAsync("files\\products", image);
-        //        }
-        //        authentication.IsDisabled = true;
-        //        await _redisCacheServices.ClearAsync("ProductVM");
-        //        await _redisCacheServices.ClearAsync("ProductImageFiles");
-        //        throw new ExpirationDateException("Kodun müddəti bitmişdir! Təkrar giriş edin");
-        //    }
-        //    //Kod dogrulugunun yoxlanilmasi, təkrar yoxlama limiti
-        //    if (authenticationCount != null && authentication == null)
-        //    {
-        //        if (authenticationCount.Count > 1)
-        //            authenticationCount.Count -= 1;
-        //        else
-        //        {
-        //            foreach (var image in images)
-        //            {
-        //                await _storageService.DeleteAsync("files\\products", image);
-        //            }
-        //            authenticationCount.IsDisabled = true;
-        //            await _redisCacheServices.ClearAsync("ProductVM");
-        //            await _redisCacheServices.ClearAsync("ProductImageFiles");
-        //        }
-        //        await _userAuthenticationWriteRepository.SaveAsync();
+            if (!isValid)
+            {
+                // Əgər son cəhd bitibsə, şəkilləri sil və Redis açarlarını təmizlə
+                foreach (var image in images)
+                {
+                    await _storageService.DeleteAsync("files\\products", image);
+                }
+                await _redisCacheServices.ClearAsync($"ProductVM:{phoneNumber}");
+                await _redisCacheServices.ClearAsync($"ProductImageFiles:{phoneNumber}");
+                await _redisCacheServices.ClearAsync($"ProductPath:{phoneNumber}");
+                await _redisCacheServices.ClearAsync(redisKey);
 
-        //        throw new ExpirationDateException("Kod yanlışdır! Təkrar giriş edin");
-        //    }
+                throw new AuthenticationCodeException("Kod yanlışdır! Təkrar etmə limiti bitmişdir.");
+            }
 
-        //    return authentication;
-        //}
+            return true;
+        }
+
     }
 }
