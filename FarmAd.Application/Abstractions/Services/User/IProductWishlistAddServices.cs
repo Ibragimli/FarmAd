@@ -13,6 +13,5 @@ namespace FarmAd.Application.Abstractions.Services.User
         Task IsProduct(int id);
         Task<WishProductCreateDto> UserAddWish(int id, AppUser user);
         void CookieAddWish(int id);
-        Task<AppUser> IsAuthenticated();
     }
 }

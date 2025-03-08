@@ -1,4 +1,5 @@
 ﻿using FarmAd.Application.Abstractions.Services;
+using FarmAd.Application.Abstractions.Services.Area;
 using FarmAd.Domain.Entities.Identity;
 using MediatR;
 using System;
@@ -7,19 +8,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Queries.Role.GetRoles
+namespace FarmAd.Application.Features.Queries.ContactUs.GetContactUsQueries
 {
-    public class GetRolesQueriesHandler : IRequestHandler<GetRolesQueriesRequest, GetRolesQueriesResponse>
+    public class GetContactUsQueriesHandler : IRequestHandler<GetContactUsQueriesRequest, GetContactUsQueriesResponse>
     {
-        private readonly IRoleService _roleService;
+        private readonly IContactUsIndexServices _contactUsIndexServices;
 
-        public GetRolesQueriesHandler(IRoleService roleService)
+        public GetContactUsQueriesHandler(IContactUsIndexServices contactUsIndexServices)
         {
-            _roleService = roleService;
+            _contactUsIndexServices = contactUsIndexServices;
         }
-        public async Task<GetRolesQueriesResponse> Handle(GetRolesQueriesRequest request, CancellationToken cancellationToken)
+        public async Task<GetContactUsQueriesResponse> Handle(GetContactUsQueriesRequest request, CancellationToken cancellationToken)
         {
-            var (datas, count) = _roleService.GetAllRoles(request.Page, request.Size);
+            var (datas, count) = await _contactUsIndexServices.SearchCheck(request.Name, request.Page, request.Size);
             return new()
             {
                 Datas = datas,

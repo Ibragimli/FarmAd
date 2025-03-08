@@ -9,6 +9,7 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface IContactUsIndexServices
     {
-        IQueryable<ContactUs> SearchCheck(string search);
+        Task<(object, int)> SearchCheck(string search, int page, int size);
+
     }
 }

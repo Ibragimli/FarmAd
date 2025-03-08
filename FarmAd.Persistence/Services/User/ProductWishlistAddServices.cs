@@ -33,48 +33,37 @@ namespace FarmAd.Persistence.Services.User
             _productReadRepository = productReadRepository;
             _userManager = userManager;
         }
-        public void CookieAddWish(int id)
-        {
-            List<CookieWishItemDto> wishItems = new List<CookieWishItemDto>();
-            string existWishItem = _httpContextAccessor.HttpContext.Request.Cookies["wishItemList"];
-            if (existWishItem != null)
-            {
-                wishItems = JsonConvert.DeserializeObject<List<CookieWishItemDto>>(existWishItem);
-            }
-            CookieWishItemDto item = wishItems.Find(x => x.ProductId == id);
 
-            if (item == null)
-            {
-                item = new CookieWishItemDto
-                {
-                    ProductId = id,
-                };
-                wishItems.Add(item);
-            }
-
-            var ProductIdStr = JsonConvert.SerializeObject(wishItems);
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("wishItemList", ProductIdStr);
-            var wishData = _getCookieWishItems(wishItems);
-        }
-        public async Task<AppUser> IsAuthenticated()
-        {
-            AppUser user = null;
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                user = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
-            }
-            return user;
-        }
         public async Task IsProduct(int id)
         {
             if (!await _productReadRepository.IsExistAsync(id))
             {
-                throw new ItemNotFoundException("Mehsul Tapilmadi");
+                throw new ItemNotFoundException("Elan tapılmadı!");
             }
             if (await _productReadRepository.IsExistAsync(x => x.ProductFeatures.ProductStatus != ProductStatus.Active && x.Id == id))
             {
                 throw new ItemFormatException("Elan aktiv deyil!");
             }
+        }
+        public void CookieAddWish(int id)
+        {
+            List<CookieWishItemDto> wishItems = new();
+            string existWishItem = _httpContextAccessor.HttpContext.Request.Cookies["wishItemList"];
+
+            if (!string.IsNullOrEmpty(existWishItem))
+            {
+                wishItems = JsonConvert.DeserializeObject<List<CookieWishItemDto>>(existWishItem);
+            }
+
+            if (!wishItems.Any(x => x.ProductId == id)) // Mövcud olub-olmadığını yoxlayırıq
+            {
+                wishItems.Add(new CookieWishItemDto { ProductId = id });
+
+                var serializedWishItems = JsonConvert.SerializeObject(wishItems);
+                _httpContextAccessor.HttpContext.Response.Cookies.Append("wishItemList", serializedWishItems);
+            }
+
+            var wishData = _getCookieWishItems(wishItems);
         }
         public async Task<WishProductCreateDto> UserAddWish(int id, AppUser user)
         {
@@ -91,9 +80,7 @@ namespace FarmAd.Persistence.Services.User
                 await _wishItemWriteRepository.SaveAsync();
             }
 
-
-            var wishData = _getUserWishItems(await _wishItemReadRepository.GetAllAsync(x => x.AppUserId == user.Id));
-            return wishData;
+            return _getUserWishItems(await _wishItemReadRepository.GetAllAsync(x => x.AppUserId == user.Id));
         }
         private async Task<WishProductCreateDto> _getCookieWishItems(List<CookieWishItemDto> cookieWishItems)
         {
@@ -104,15 +91,20 @@ namespace FarmAd.Persistence.Services.User
 
             foreach (var item in cookieWishItems)
             {
+                var product = await _productReadRepository.GetAsync(x => x.Id == item.ProductId, "ProductFeatures");
 
-                var Product = await _productReadRepository.GetAsync(x => x.Id == item.ProductId, "ProductFeatures");
-                WishItemsDto wishItem = new WishItemsDto
+                if (product?.ProductFeatures != null) // Null yoxlanışı əlavə edirik
                 {
-                    Name = Product.ProductFeatures.Name,
-                    Price = (decimal)Product.ProductFeatures.Price,
-                    ProductId = Product.Id,
-                };
+                    WishItemsDto wishItem = new WishItemsDto
+                    {
+                        Name = product.ProductFeatures.Name,
+                        Price = (decimal)product.ProductFeatures.Price,
+                        ProductId = product.Id,
+                    };
+                    wishItems.WishItems.Add(wishItem); // 🔥 Burada `wishItems` listinə əlavə edirik.
+                }
             }
+
             return wishItems;
         }
         private WishProductCreateDto _getUserWishItems(IEnumerable<WishItem> wishItems)

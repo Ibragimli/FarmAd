@@ -7,9 +7,9 @@ namespace FarmAd.Application.DTOs.User
 {
     public class ProfileEditDto
     {
-        public string Fullname { get; set; }
-        public string Email { get; set; }
         public string UserId { get; set; }
+        public string Fullname { get; set; }
+        public string? Email { get; set; }
     }
     public class ProfileEditDtoValidator : AbstractValidator<ProfileEditDto>
     {

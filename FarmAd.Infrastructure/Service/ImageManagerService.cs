@@ -121,8 +121,5 @@ namespace FarmAd.Infrastructure.Service
             }
             return productImages;
         }
-
-
-
     }
 }

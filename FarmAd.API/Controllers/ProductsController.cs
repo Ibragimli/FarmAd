@@ -1,12 +1,16 @@
 ﻿using FarmAd.Application.Consts;
 using FarmAd.Application.CustomAttributes;
 using FarmAd.Application.Enums;
+using FarmAd.Application.Features.Commands.Product.ProductAddWishlistCommand;
 using FarmAd.Application.Features.Commands.Product.ProductAuthenticationCommand;
 using FarmAd.Application.Features.Commands.Product.ProductCreateCommand;
 using FarmAd.Application.Features.Commands.Product.ProductDeleteCommand;
+using FarmAd.Application.Features.Commands.Product.ProductDeleteWishlistCommand;
 using FarmAd.Application.Features.Commands.Product.ProductEditCommand;
 using FarmAd.Application.Features.Queries.Product.GetAllProducts;
+using FarmAd.Application.Features.Queries.Product.ProductDetailQueries;
 using FarmAd.Application.Features.Queries.Role.GetRoles;
+using FarmAd.Persistence.Services.User;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +34,12 @@ namespace FarmAd.API.Controllers
             GetAllProductsResponse response = await _mediator.Send(request);
             return Ok(response);
         }
+        [HttpGet("ProductDetail/{Id}")]
+        public async Task<IActionResult> ProductDetail([FromRoute] ProductDetailQueriesRequest request)
+        {
+            ProductDetailQueriesResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
 
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct([FromForm] ProductCreateCommandRequest request)
@@ -38,8 +48,18 @@ namespace FarmAd.API.Controllers
             return Ok(response);
         }
 
-
-
+        [HttpPost("ProductAddWishlist")]
+        public async Task<IActionResult> ProductAddWishlist([FromBody] ProductAddWishlistCommandRequest request)
+        {
+            ProductAddWishlistCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
+        [HttpDelete("ProductDeleteWishlist")]
+        public async Task<IActionResult> ProductDeleteWishlist([FromBody] ProductDeleteWishlistCommandRequest request)
+        {
+            ProductDeleteWishlistCommandResponse response = await _mediator.Send(request);
+            return Ok(response);
+        }
 
         [HttpPut("EditProduct")]
         //[Authorize(AuthenticationSchemes = "Admin")]
@@ -54,7 +74,7 @@ namespace FarmAd.API.Controllers
             ProductAuthenticationCommandResponse response = await _mediator.Send(request);
             return Ok(response);
         }
-       
+
         [HttpDelete("DeleteProduct/{Id}")]
         //[Authorize(AuthenticationSchemes = "Admin")]
         public async Task<IActionResult> DeleteProduct([FromRoute] ProductDeleteCommandRequest request)

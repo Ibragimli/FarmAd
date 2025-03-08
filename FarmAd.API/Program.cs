@@ -1,4 +1,4 @@
-using FarmAd.Persistence.Contexts;
+﻿using FarmAd.Persistence.Contexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Logging;
@@ -43,14 +43,19 @@ builder.Services.AddControllers().AddFluentValidation(x => x.RegisterValidatorsF
 builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
     policy.WithOrigins("https://localhost:7006").WithOrigins("http://localhost:7006").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 
-
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
-    //options.Filters.Add<RolePermissionFilter>();
+    // options.Filters.Add<RolePermissionFilter>();
 })
-    .AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>())
-    .ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true);
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true; 
+})
+.AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>())
+.ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

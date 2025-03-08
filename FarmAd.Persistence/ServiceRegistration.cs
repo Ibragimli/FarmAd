@@ -48,9 +48,11 @@ using MailKit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,15 +63,21 @@ namespace FarmAd.Persistence
     {
         public static void AddPersistenceServices(this IServiceCollection services)
         {
-
-
-
             services.AddScoped<IProductGetServices, ProductGetServices>();
             services.AddScoped<IProductUserIdWriteRepository, ProductUserIdWriteRepository>();
             services.AddScoped<IProductDeleteServices, ProductDeleteServices>();
             services.AddScoped<IProductUserIdReadRepository, ProductUserIdReadRepository>();
             services.AddScoped<IProductFeatureServices, ProductFeatureServices>();
             services.AddScoped<IProductEditServices, ProductEditServices>();
+            services.AddScoped<IContactUsServices, ContactUsServices>();
+            services.AddScoped<IContactRespondServices, ContactRespondServices>();
+            services.AddScoped<IContactUsDeleteServices, ContactUsDeleteServices>();
+            services.AddScoped<IContactUsIndexServices, ContactUsIndexServices>();
+            services.AddScoped<IProductWishlistAddServices, ProductWishlistAddServices>();
+            services.AddScoped<IProductWishlistDeleteServices, ProductWishlistDeleteServices>();
+            services.AddScoped<IProfileEditServices, ProfileEditServices>();
+            services.AddScoped<IProfileIndexServices, ProfileIndexServices>();
+            services.AddScoped<IProductDetailIndexServices , ProductDetailIndexServices>();
 
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IOTPService, OTPService>();

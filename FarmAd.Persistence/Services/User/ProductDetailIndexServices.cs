@@ -34,42 +34,50 @@ namespace FarmAd.Persistence.Services.User
 
         public async Task<Product> GetProduct(int id)
         {
-            var Product = await _productReadRepository.GetAsync(x => x.Id == id && !x.IsDelete, "ProductImages", "ProductUserIds.AppUser", "ProductFeatures.City", "ProductFeatures.SubCategory.Category");
+            var product = await _productReadRepository.GetAsync(
+                x => x.Id == id && !x.IsDelete,
+                "ProductImages",
+                "ProductUserIds.AppUser",
+                "ProductFeatures.City",
+                "ProductFeatures.SubCategory",
+                "ProductFeatures.SubCategory.Category"
+            );
 
-            if (Product == null) throw new NotFoundException("error404");
-            return Product;
+            if (product == null) throw new NotFoundException("Elan tapılmadı!");
+            return product;
         }
-        public async Task<List<Product>> GetSimilarProduct(int id, Product Product)
+
+        public async Task<List<Product>> GetSimilarProduct(int id, Product product)
         {
-            var similarProduct = await _productReadRepository.GetAllAsync(x => x.Id != id && !x.IsDelete && x.ProductFeatures.SubCategory.CategoryId == Product.ProductFeatures.SubCategory.CategoryId, true,
-                   "ProductImages", "ProductUserIds.AppUser", "ProductFeatures.City", "ProductFeatures.SubCategory.Category");
+            var similarProducts = await _productReadRepository.GetAllAsync(
+                x => x.Id != id && !x.IsDelete && x.ProductFeatures.SubCategory.CategoryId == product.ProductFeatures.SubCategory.CategoryId,
+                true,
+                "ProductImages",
+                "ProductUserIds.AppUser",
+                "ProductFeatures.City",
+                "ProductFeatures.SubCategory.Category"
+            );
 
-            return similarProduct.ToList();
-        }
-
-        public async Task<ProductUserId> GetUser(int id)
-        {
-            var user = await _productUserIdReadRepository.GetAsync(x => x.ProductId == id && !x.IsDelete);
-            if (user == null) throw new NotFoundException("error404");
-
-            return user;
+            return similarProducts.ToList();
         }
 
         public async Task<int> GetWishCount(int id)
         {
-            var count = await _wishItemReadRepository.GetTotalCountAsync(x => x.ProductId == id && !x.IsDelete);
-
-            return count;
+            return await _wishItemReadRepository.GetTotalCountAsync(x => x.ProductId == id && !x.IsDelete);
         }
+
         public async Task<List<ServiceDuration>> GetServiceDurations()
         {
             var durations = await _serviceDurationReadRepository.GetAllAsync(x => !x.IsDelete);
             return durations.ToList();
         }
-        public async Task ProductViewCount(Product Product)
+
+        public async Task ProductViewCount(Product product)
         {
-            Product.ProductFeatures.ViewCount++;
+            product.ProductFeatures.ViewCount++;
+            _productWriteRepository.Update(product);
             await _productWriteRepository.SaveAsync();
         }
+
     }
 }

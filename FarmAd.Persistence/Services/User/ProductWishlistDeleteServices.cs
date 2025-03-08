@@ -54,7 +54,7 @@ namespace FarmAd.Persistence.Services.User
         public async Task IsProduct(int id)
         {
             if (!await _productReadRepository.IsExistAsync(x => x.Id == id))
-                throw new ItemNotFoundException("Mehsul Tapilmadi");
+                throw new ItemNotFoundException("Elan tapılmadı");
         }
 
         public async Task<WishItem> UserDeleteWish(int id, AppUser user)

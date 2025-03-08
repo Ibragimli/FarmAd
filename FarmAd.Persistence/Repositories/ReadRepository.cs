@@ -134,10 +134,19 @@ namespace FarmAd.Persistence.Repositories
             {
                 foreach (var item in includes)
                 {
-                    query = query.Include(item);
+                    try
+                    {
+                        query = query.Include(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        // ⚠️ Geçersiz Include hatalarını logla, ama devam et
+                        Console.WriteLine($"Invalid Include: {item} - {ex.Message}");
+                    }
                 }
             }
             return query;
         }
+
     }
 }

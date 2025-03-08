@@ -30,7 +30,7 @@ namespace FarmAd.Persistence.Services.User
             ContactUs contact = new ContactUs
             {
                 Email = contactUsDto.Email,
-                Fullname = contactUsDto.FullName,
+                Fullname = contactUsDto.Fullname,
                 Subject = contactUsDto.Subject,
                 Message = contactUsDto.Message,
             };
