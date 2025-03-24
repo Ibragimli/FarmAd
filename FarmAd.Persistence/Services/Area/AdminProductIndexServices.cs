@@ -22,56 +22,67 @@ namespace FarmAd.Persistence.Service.Area
         private readonly ICategoryReadRepository _categoryReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
 
-        public AdminProductIndexServices(IProductReadRepository productReadRepository, ISubCategoryReadRepository subCategoryReadRepository, ICategoryReadRepository categoryReadRepository, IProductWriteRepository productWriteRepository)
+        public AdminProductIndexServices(
+            IProductReadRepository productReadRepository,
+            ISubCategoryReadRepository subCategoryReadRepository,
+            ICategoryReadRepository categoryReadRepository,
+            IProductWriteRepository productWriteRepository)
         {
             _productReadRepository = productReadRepository;
             _subCategoryReadRepository = subCategoryReadRepository;
             _categoryReadRepository = categoryReadRepository;
             _productWriteRepository = productWriteRepository;
         }
-        public async Task IsDisabled()
+
+        public async Task DisableExpiredProducts()
         {
             var now = DateTime.UtcNow.AddHours(4);
-            var ValidateProduct = await _productReadRepository.IsExistAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeatures");
-            if (ValidateProduct)
+
+            var products = (await _productReadRepository.GetAllAsync(
+                x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now,
+                true, "ProductFeatures")).ToList();
+
+            if (products.Any())
             {
-                var Products = await _productReadRepository.GetAllAsync(x => !x.IsDelete && !x.ProductFeatures.IsDisabled && x.ProductFeatures.ExpirationDateDisabled < now, true, "ProductFeatures");
-                foreach (var Product in Products)
+                products.ForEach(product =>
                 {
-                    Product.ProductFeatures.ProductStatus = ProductStatus.Disabled;
-                    Product.ProductFeatures.IsDisabled = true;
-                    await _productWriteRepository.SaveAsync();
-                }
+                    product.ProductFeatures.ProductStatus = ProductStatus.Disabled;
+                    product.ProductFeatures.IsDisabled = true;
+                });
+
+                await _productWriteRepository.SaveAsync();
             }
         }
-        public IQueryable<Product> GetProduct(string name, string phoneNumber, int subCategoryId)
-        {
-            var Product = _productReadRepository.asQueryableProduct();
-            Product = Product.Where(x => !x.IsDelete);
-            if (subCategoryId != 0)
-                Product = Product.Where(x => x.ProductFeatures.SubCategoryId == subCategoryId);
-            if (name != null)
-                Product = Product.Where(i => EF.Functions.Like(i.ProductFeatures.Name, $"%{name}%"));
-            if (phoneNumber != null)
-                Product = Product.Where(i => EF.Functions.Like(i.ProductFeatures.PhoneNumber, $"%{phoneNumber}%"));
 
-            return Product;
+        public async Task<(IQueryable<Product>, int)> GetProducts(string name, string phoneNumber, int subCategoryId)
+        {
+            var products = _productReadRepository.asQueryableProduct().Where(x => !x.IsDelete);
+            var count = await _productReadRepository.GetTotalCountAsync(x => !x.IsDelete);
+
+            if (subCategoryId != 0)
+                products = products.Where(x => x.ProductFeatures.SubCategoryId == subCategoryId);
+
+            if (!string.IsNullOrWhiteSpace(name))
+                products = products.Where(i => EF.Functions.Like(i.ProductFeatures.Name, $"%{name}%"));
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+                products = products.Where(i => EF.Functions.Like(i.ProductFeatures.PhoneNumber, $"%{phoneNumber}%"));
+
+            return (products,count);
         }
+
         public async Task<List<SubCategory>> GetSubCategories()
         {
             var subCategories = await _subCategoryReadRepository.GetAllAsync(x => !x.IsDelete);
-            if (subCategories == null)
-                throw new NotFoundException("Error");
-            return subCategories.ToList();
+            return subCategories?.ToList() ?? throw new NotFoundException("Subcategories not found");
         }
+
         public async Task<List<Category>> GetCategories()
         {
-            var subCategories = await _categoryReadRepository.GetAllAsync(x => !x.IsDelete);
-            if (subCategories == null)
-                throw new NotFoundException("Error");
-            return subCategories.ToList();
+            var categories = await _categoryReadRepository.GetAllAsync(x => !x.IsDelete);
+            return categories?.ToList() ?? throw new NotFoundException("Categories not found");
         }
 
-
     }
+
 }

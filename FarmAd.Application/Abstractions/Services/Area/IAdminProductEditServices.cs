@@ -9,8 +9,8 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface IAdminProductEditServices
     {
-        public void CheckPostEdit(Product Product);
-        public Task EditProduct(Product Product);
+        public void CheckPostEdit(AdminProductEditPostDto product);
+        public Task EditProduct(AdminProductEditPostDto product);
         public Task ProductActive(int id);
         public Task ProductDisabled(int id);
 

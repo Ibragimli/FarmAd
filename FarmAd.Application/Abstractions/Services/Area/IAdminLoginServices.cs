@@ -1,4 +1,5 @@
-﻿using FarmAd.Application.DTOs.Area;
+﻿using FarmAd.Application.DTOs;
+using FarmAd.Application.DTOs.Area;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,6 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface IAdminLoginServices
     {
-        Task<bool> Login(AdminLoginPostDto adminLoginPostDto);
-        void Logout();
+        Task<Token> Login(AdminLoginPostDto adminLoginPostDto);
     }
 }

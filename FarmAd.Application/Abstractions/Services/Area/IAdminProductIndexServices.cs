@@ -9,10 +9,10 @@ namespace FarmAd.Application.Abstractions.Services.Area
 {
     public interface IAdminProductIndexServices
     {
-        public IQueryable<Product> GetProduct(string name, string phoneNumber, int subCategoryId);
+        public Task<(IQueryable<Product>, int)> GetProducts(string name, string phoneNumber, int subCategoryId);
         public Task<List<SubCategory>> GetSubCategories();
         public Task<List<Category>> GetCategories();
-        public Task IsDisabled();
+        public Task DisableExpiredProducts();
 
 
     }

@@ -3,6 +3,7 @@ using FarmAd.Application.Consts;
 using FarmAd.Application.CustomAttributes;
 using FarmAd.Application.DTOs;
 using FarmAd.Application.Enums;
+using FarmAd.Application.Features.Commands.Admin.CreateAdmin;
 using FarmAd.Application.Features.Commands.User.LoginAuthentication;
 using FarmAd.Application.Features.Commands.User.LoginUser;
 using FarmAd.Application.Features.Commands.User.ProfileUpdate;
@@ -59,7 +60,21 @@ namespace FarmAd.API.Controllers
             }
             return Ok(response);
         }
+        [HttpPost("CreateAdmin")]
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminCommandRequest request)
+        {
+            CreateAdminCommandResponse response = new();
+            try
+            {
+                response = await _mediator.Send(request);
 
+            }
+            catch (Exception ms)
+            {
+                return Ok(ms.Message);
+            }
+            return Ok(response);
+        }
         [HttpPost("login")]
         //[AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Login", Menu = AuthorizeDefinationConstants.Users)]
         public async Task<IActionResult> Login([FromBody] LoginUserCommandRequest request)

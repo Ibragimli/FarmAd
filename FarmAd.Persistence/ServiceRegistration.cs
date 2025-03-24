@@ -78,6 +78,10 @@ namespace FarmAd.Persistence
             services.AddScoped<IProfileEditServices, ProfileEditServices>();
             services.AddScoped<IProfileIndexServices, ProfileIndexServices>();
             services.AddScoped<IProductDetailIndexServices , ProductDetailIndexServices>();
+            services.AddScoped<IAdminLoginServices , AdminLoginServices>();
+            services.AddScoped<IAdminProductDetailIndexServices , AdminProductDetailIndexServices>();
+            services.AddScoped<IAdminProductIndexServices , AdminProductIndexServices>();
+            services.AddScoped<IAdminProductEditServices , AdminProductEditServices>();
 
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IOTPService, OTPService>();

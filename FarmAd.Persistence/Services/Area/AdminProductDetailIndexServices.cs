@@ -23,7 +23,12 @@ namespace FarmAd.Persistence.Service.Area
         private readonly ICategoryReadRepository _categoryReadRepository;
         private readonly ISubCategoryReadRepository _subCategoryReadRepository;
 
-        public AdminProductDetailIndexServices(IProductReadRepository productReadRepository, ICityReadRepository cityReadRepository, IProductUserIdReadRepository productUserIdReadRepository, ICategoryReadRepository categoryReadRepository, ISubCategoryReadRepository subCategoryReadRepository)
+        public AdminProductDetailIndexServices(
+            IProductReadRepository productReadRepository,
+            ICityReadRepository cityReadRepository,
+            IProductUserIdReadRepository productUserIdReadRepository,
+            ICategoryReadRepository categoryReadRepository,
+            ISubCategoryReadRepository subCategoryReadRepository)
         {
             _productReadRepository = productReadRepository;
             _cityReadRepository = cityReadRepository;
@@ -31,42 +36,42 @@ namespace FarmAd.Persistence.Service.Area
             _categoryReadRepository = categoryReadRepository;
             _subCategoryReadRepository = subCategoryReadRepository;
         }
+
         public async Task<Product> GetProduct(int id)
         {
-            var Product = await _productReadRepository.GetAsync(x => x.Id == id, "ProductFeatures.SubCategory", "ProductFeatures.SubCategory.Category", "ProductFeatures.City", "ProductImages");
-            if (Product == null)
-                throw new NotFoundException("Error");
-            return Product;
+            var product = await _productReadRepository.GetAsync(
+                x => x.Id == id,
+                "ProductFeatures.SubCategory",
+                "ProductFeatures.SubCategory.Category",
+                "ProductFeatures.City",
+                "ProductImages");
+
+            return product ?? throw new NotFoundException($"Product with ID {id} not found");
         }
 
         public async Task<List<SubCategory>> GetSubCategories()
         {
-            var subCategories = await _subCategoryReadRepository.GetAllAsync(x => !x.IsDelete);
-            if (subCategories == null)
-                throw new NotFoundException("Error");
-            return subCategories.ToList();
-        }
-        public async Task<List<Category>> GetCategories()
-        {
-            var categories = await _categoryReadRepository.GetAllAsync(x => !x.IsDelete);
-            if (categories == null)
-                throw new NotFoundException("Error");
-            return categories.ToList();
-        }
-        public async Task<ProductUserId> GetAppUser(int ProductId)
-        {
-            var user = await _productUserIdReadRepository.GetAsync(x => !x.IsDelete && x.ProductId == ProductId, "AppUser");
-            if (user == null)
-                throw new NotFoundException("Error");
-            return user;
+            return (await _subCategoryReadRepository.GetAllAsync(x => !x.IsDelete)).ToList();
         }
 
-        public async Task<List<City>> GetAllCity()
+        public async Task<List<Category>> GetCategories()
         {
-            var cities = await _cityReadRepository.GetAllAsync(x => !x.IsDelete);
-            if (cities == null)
-                throw new NotFoundException("Error");
-            return cities.ToList();
+            return (await _categoryReadRepository.GetAllAsync(x => !x.IsDelete)).ToList();
         }
+
+        public async Task<ProductUserId> GetAppUser(int productId)
+        {
+            var user = await _productUserIdReadRepository.GetAsync(
+                x => !x.IsDelete && x.ProductId == productId, "AppUser");
+
+            return user ?? throw new NotFoundException($"User with Product ID {productId} not found");
+        }
+
+        public async Task<List<City>> GetAllCities()
+        {
+            return (await _cityReadRepository.GetAllAsync(x => !x.IsDelete)).ToList();
+        }
+      
     }
+
 }

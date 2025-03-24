@@ -11,7 +11,7 @@ namespace FarmAd.Application.Abstractions.Services.Area
         public Task<Product> GetProduct(int id);
         public Task<List<SubCategory>> GetSubCategories();
         public Task<List<Category>> GetCategories();
-        public Task<List<City>> GetAllCity();
+        public Task<List<City>> GetAllCities();
         public Task<ProductUserId> GetAppUser(int ProductId);
 
     }

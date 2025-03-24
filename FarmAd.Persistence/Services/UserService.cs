@@ -39,6 +39,37 @@ namespace FarmAd.Persistence.Services
             List<AppUser> users = await _userManager.Users.Skip(page * size).Take(size).ToListAsync();
             return users;
         }
+        public async Task<AppUser> CreateAdmin(string Username, string fullname)
+        {
+            AppUser newUser = new AppUser();
+            //hesab yaradmaq
+
+            var UserExists = await GetAsync(x => x.UserName == Username);
+            if (UserExists == null)
+            {
+                newUser = new AppUser
+                {
+                    UserName = Username,
+                    PhoneNumber = Username,
+                    IsAdmin = true,
+                    Balance = 0,
+                    Fullname = fullname,
+                };
+                var result = await _userManager.CreateAsync(newUser);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        throw new Exception(error.Description);
+                    }
+                }
+                await _userManager.AddToRoleAsync(newUser, "Admin");
+                await _userAuthenticationWriteRepository.SaveAsync();
+                return newUser;
+            }
+            return UserExists;
+            //hesab yaradmaq
+        }
         public async Task<AppUser> CreateNewUser(string phoneNumber, string email, string fullname)
         {
             AppUser newUser = new AppUser();
