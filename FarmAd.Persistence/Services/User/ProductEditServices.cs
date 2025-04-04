@@ -85,7 +85,7 @@ namespace FarmAd.Persistence.Services.User
 
             await _productWriteRepository.SaveAsync();
         }
-        public void ProductEditCheck(ProductEditDto product)
+        public void ProductEditCheck(AdminProductEditPostDto product)
         {
             if (product == null)
                 throw new ArgumentNullException(nameof(product), "Məhsul null ola bilməz!");
@@ -102,7 +102,7 @@ namespace FarmAd.Persistence.Services.User
             if (product.Price <= 0)
                 throw new ItemNullException("Elanın qiyməti 0₼-dan çox olmalıdır!");
         }
-        public async Task ProductEdit(ProductEditDto productDto)
+        public async Task ProductEdit(AdminProductEditPostDto productDto)
         {
             if (productDto == null || productDto.Id == 0)
                 throw new ItemNotFoundException("Elan tapılmadı");
@@ -179,7 +179,7 @@ namespace FarmAd.Persistence.Services.User
                 await _productWriteRepository.SaveAsync();
             }
         }
-        private async Task<int> PosterImageChange(ProductEditDto productDto, Product productExist)
+        private async Task<int> PosterImageChange(AdminProductEditPostDto productDto, Product productExist)
         {
             if (productDto.PosterImageFile != null)
             {
@@ -199,7 +199,7 @@ namespace FarmAd.Persistence.Services.User
             return 0;
 
         }
-        private async Task<int> DeleteImages(ProductEditDto productDto, Product productExist)
+        private async Task<int> DeleteImages(AdminProductEditPostDto productDto, Product productExist)
         {
             int i = 0;
             ICollection<ProductImage> productImages = productExist.ProductImages;

@@ -6,9 +6,9 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
+namespace FarmAd.Application.Features.Commands.Product.Area.ProductDisabledCommand
 {
-    public class ProductEditCommandResponse
+    public class ProductDisabledCommandResponse
     {
         public bool Succeed { get; set; }
     }

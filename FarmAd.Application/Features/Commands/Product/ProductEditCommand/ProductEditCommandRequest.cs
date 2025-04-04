@@ -11,7 +11,7 @@ namespace FarmAd.Application.Features.Commands.Product.ProductEditCommand
 {
     public class ProductEditCommandRequest : IRequest<ProductEditCommandResponse>
     {
-        public ProductEditDto ProductEditDto { get; set; }
+        public DTOs.User.AdminProductEditPostDto ProductEditDto { get; set; }
 
     }
 }

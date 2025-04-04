@@ -7,7 +7,7 @@ using System.Text;
 namespace FarmAd.Application.DTOs.User
 {
 
-    public class ProductEditDto
+    public class AdminProductEditPostDto
     {
         public int Id { get; set; }
         public int SubCategoryId { get; set; }
@@ -27,7 +27,7 @@ namespace FarmAd.Application.DTOs.User
         public IFormFile? PosterImageFile { get; set; }
 
     }
-    public class ProductEditDtoValidator : AbstractValidator<ProductEditDto>
+    public class ProductEditDtoValidator : AbstractValidator<AdminProductEditPostDto>
     {
         public ProductEditDtoValidator()
         {

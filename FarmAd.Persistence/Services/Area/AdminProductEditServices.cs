@@ -8,33 +8,31 @@ using System.Threading.Tasks;
 using FarmAd.Domain.Enums;
 using FarmAd.Application.Repositories.Product;
 using FarmAd.Application.DTOs.Area;
+using FarmAd.Application.Repositories.SubCategory;
 
 namespace FarmAd.Persistence.Service.Area
 {
     public class AdminProductEditServices : IAdminProductEditServices
     {
+        private readonly ISubCategoryReadRepository _subCategoryReadRepository;
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
 
-        public AdminProductEditServices(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
+        public AdminProductEditServices(ISubCategoryReadRepository subCategoryReadRepository, IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
         {
+            _subCategoryReadRepository = subCategoryReadRepository;
             _productReadRepository = productReadRepository;
             _productWriteRepository = productWriteRepository;
         }
 
-        public void CheckPostEdit(AdminProductEditPostDto product)
+        public async Task CheckPostEdit(AdminProductEditPostDto product)
         {
             if (product.Id == 0)
                 throw new NotFoundException("Product ID is missing");
 
-            if (product.SubCategoryId == 0)
-                throw new ItemNullException("Category cannot be empty");
 
-            if (string.IsNullOrWhiteSpace(product.Name))
-                throw new ItemNullException("Product name cannot be empty");
-
-            if (string.IsNullOrWhiteSpace(product.Describe))
-                throw new ItemNullException("Description cannot be empty");
+            if (product.SubCategoryId != 0 && !await _subCategoryReadRepository.IsExistAsync(x => x.Id == product.SubCategoryId))
+                throw new ItemNullException("Category not found!");
 
             if (product.Name.Length > 100)
                 throw new ItemNullException("Product name cannot exceed 100 characters");
@@ -49,18 +47,20 @@ namespace FarmAd.Persistence.Service.Area
             if (oldProduct == null)
                 throw new NotFoundException($"Product not found with ID {product.Id}");
 
-            oldProduct.ProductFeatures.Name = product.Name;
-            oldProduct.ProductFeatures.Describe = product.Describe;
-            oldProduct.ProductFeatures.SubCategoryId = product.SubCategoryId;
-
+            if (string.IsNullOrWhiteSpace(product.Name))
+                oldProduct.ProductFeatures.Name = product.Name;
+            if (string.IsNullOrWhiteSpace(product.Describe))
+                oldProduct.ProductFeatures.Describe = product.Describe;
+            if (product.SubCategoryId != 0)
+                oldProduct.ProductFeatures.SubCategoryId = product.SubCategoryId;
             await _productWriteRepository.SaveAsync();
         }
 
         public async Task ProductDisabled(int id)
         {
-            var product = await _productReadRepository.GetAsync(x => x.Id == id);
+            var product = await _productReadRepository.GetAsync(x => x.Id == id, "ProductFeatures");
             if (product == null)
-                throw new ItemNotFoundException($"Product not found with ID {id}");
+                throw new ItemNotFoundException($"Product not found with ID:{id}");
 
             var defaultTime = new DateTime(0001, 01, 01, 8, 36, 44);
 
@@ -75,9 +75,9 @@ namespace FarmAd.Persistence.Service.Area
 
         public async Task ProductActive(int id)
         {
-            var product = await _productReadRepository.GetAsync(x => x.Id == id);
+            var product = await _productReadRepository.GetAsync(x => x.Id == id, "ProductFeatures");
             if (product == null)
-                throw new ItemNotFoundException($"Product not found with ID {id}");
+                throw new ItemNotFoundException($"Product not found with ID:{id}");
 
             var now = DateTime.UtcNow;
 
@@ -88,5 +88,7 @@ namespace FarmAd.Persistence.Service.Area
 
             await _productWriteRepository.SaveAsync();
         }
+
+
     }
 }

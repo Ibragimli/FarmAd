@@ -11,7 +11,7 @@ namespace FarmAd.Application.Abstractions.Services.User
     {
         public Task ProductDisabled(int id);
         public Task ProductActive(int id);
-        public void ProductEditCheck(ProductEditDto Product);
-        public Task ProductEdit(ProductEditDto Product );
+        public void ProductEditCheck(AdminProductEditPostDto Product);
+        public Task ProductEdit(AdminProductEditPostDto Product );
     }
 }

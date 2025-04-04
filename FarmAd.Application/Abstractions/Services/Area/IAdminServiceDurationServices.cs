@@ -1,4 +1,5 @@
-﻿using FarmAd.Domain.Entities;
+﻿using FarmAd.Application.DTOs.Area;
+using FarmAd.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace FarmAd.Application.Abstractions.Services.Area
     {
         public IQueryable<ServiceDuration> GetServiceDurations();
         public Task<ServiceDuration> GetServiceDuration(int id);
-        public Task ServiceDurationCreate(ServiceDuration ServiceDuration);
-        public Task ServiceDurationEdit(ServiceDuration ServiceDuration);
+        public Task ServiceDurationCreate(ServiceDurationCreatePostDto ServiceDuration);
+        public Task ServiceDurationEdit(ServiceDurationEditPostDto ServiceDuration);
     }
 }

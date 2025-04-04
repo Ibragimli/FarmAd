@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
+namespace FarmAd.Application.Features.Commands.Product.Area.ProductActiveCommand
 {
-    public class ProductEditCommandRequest : IRequest<ProductEditCommandResponse>
+    public class ProductActiveCommandRequest : IRequest<ProductActiveCommandResponse>
     {
-        public AdminProductEditPostDto AdminProductEditPostDto { get; set; }
+        public int Id { get; set; }
 
     }
 }

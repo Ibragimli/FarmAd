@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FarmAd.Application.Repositories.ServiceDuration;
+using FarmAd.Application.DTOs.Area;
+using FarmAd.Domain.Enums;
 
 namespace FarmAd.Persistence.Service.Area
 {
@@ -21,95 +23,58 @@ namespace FarmAd.Persistence.Service.Area
             _serviceDurationReadRepository = serviceDurationReadRepository;
             _serviceDurationWriteRepository = serviceDurationWriteRepository;
         }
-        public async Task ServiceDurationCreate(ServiceDuration ServiceDuration)
+        public async Task ServiceDurationCreate(ServiceDurationCreatePostDto serviceDuration)
         {
-            ServiceDuration newServiceDuration = new ServiceDuration();
-            bool check = false;
-            if (ServiceDuration.Duration != 0)
+            ValidateServiceDuration(serviceDuration);
+
+            var newServiceDuration = new ServiceDuration
             {
-                newServiceDuration.Duration = ServiceDuration.Duration;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Vaxt boş ola bilməz");
+                Duration = serviceDuration.Duration,
+                Amount = serviceDuration.Amount,
+                ServiceType = (serviceDuration.ServiceType == 1 ? Domain.Enums.ServiceType.Vip : Domain.Enums.ServiceType.Premium)
+            };
 
-            if (ServiceDuration.Amount != 0)
-            {
-                newServiceDuration.Amount = ServiceDuration.Amount;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Pul hissəsi boş ola bilməz");
-
-
-            if (ServiceDuration.ServiceType != 0)
-            {
-                newServiceDuration.ServiceType = ServiceDuration.ServiceType;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Servis hissəsi boş ola bilməz");
-
-
-            if (check)
-            {
-                await _serviceDurationWriteRepository.AddAsync(newServiceDuration);
-                await _serviceDurationWriteRepository.SaveAsync();
-            }
+            await _serviceDurationWriteRepository.AddAsync(newServiceDuration);
+            await _serviceDurationWriteRepository.SaveAsync();
         }
-
-        public async Task ServiceDurationEdit(ServiceDuration ServiceDuration)
+        public async Task ServiceDurationEdit(ServiceDurationEditPostDto serviceDuration)
         {
-            bool check = false;
-            var oldServiceDuration = await _serviceDurationReadRepository.GetAsync(x => x.Id == ServiceDuration.Id);
 
-            if (ServiceDuration.Duration != 0)
-            {
-                oldServiceDuration.Duration = ServiceDuration.Duration;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Vaxt boş ola bilməz");
+            var oldServiceDuration = await _serviceDurationReadRepository.GetAsync(x => x.Id == serviceDuration.Id)
+                ?? throw new ItemNullException("Xidmət müddəti tapılmadı");
+           
+            ValidateServiceDuration(serviceDuration);
 
-            if (ServiceDuration.Amount != null)
-            {
-                oldServiceDuration.Amount = ServiceDuration.Amount;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Pul hissəsi boş ola bilməz");
+            if (serviceDuration.Duration != 0)
+                oldServiceDuration.Duration = serviceDuration.Duration;
+            if (serviceDuration.Amount != 0)
+                oldServiceDuration.Amount = serviceDuration.Amount;
+            oldServiceDuration.ServiceType = (serviceDuration.ServiceType == 1 ? Domain.Enums.ServiceType.Vip : Domain.Enums.ServiceType.Premium);
+            oldServiceDuration.ModifiedDate = DateTime.UtcNow.AddHours(4);
 
-
-            if (ServiceDuration.ServiceType != 0)
-            {
-                oldServiceDuration.ServiceType = ServiceDuration.ServiceType;
-                check = true;
-            }
-            else
-                throw new ItemNullException("Servis hissəsi boş ola bilməz");
-
-            if (check)
-            {
-                oldServiceDuration.ModifiedDate = DateTime.UtcNow.AddHours(4);
-                await _serviceDurationWriteRepository.SaveAsync();
-
-            }
+            await _serviceDurationWriteRepository.SaveAsync();
         }
-
-
         public async Task<ServiceDuration> GetServiceDuration(int id)
         {
-            var ServiceDuration = await _serviceDurationReadRepository.GetAsync(x => x.Id == id && !x.IsDelete);
-
-            return ServiceDuration;
+            return await _serviceDurationReadRepository.GetAsync(x => x.Id == id && !x.IsDelete)
+                ?? throw new ItemNullException("Xidmət müddəti tapılmadı");
         }
         public IQueryable<ServiceDuration> GetServiceDurations()
         {
-            var serviceDuration = _serviceDurationReadRepository.AsQueryable();
-            serviceDuration = serviceDuration.Where(x => !x.IsDelete);
-            return serviceDuration;
+            return _serviceDurationReadRepository.AsQueryable().Where(x => !x.IsDelete);
         }
+        private void ValidateServiceDuration(object serviceDuration)
+        {
+            dynamic dto = serviceDuration;
 
+            if (dto.Duration < 0)
+                throw new ItemNullException("Vaxt boş ola bilməz");
 
+            if (dto.Amount == null || dto.Amount < 0)
+                throw new ItemNullException("Pul hissəsi boş ola bilməz");
+
+            if (dto.ServiceType < 1 || dto.ServiceType > 2)
+                throw new ItemNullException("Servis hissəsi yanlışdır");
+        }
     }
 }

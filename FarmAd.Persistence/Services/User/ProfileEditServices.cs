@@ -67,7 +67,7 @@ namespace FarmAd.Persistence.Services.User
         {
             ProductEditGetDto ProductEditVM = new ProductEditGetDto
             {
-                ProductEditDto = new ProductEditDto(),
+                ProductEditDto = new AdminProductEditPostDto(),
 
                 Product = await _productReadRepository.GetAsync(x => x.Id == id && x.IsDelete == false && x.ProductFeatures.IsDisabled == false,
                 "ProductImages", "ProductFeatures.SubCategory", "ProductFeatures.SubCategory.Category", "ProductUserIds.AppUser", "ProductFeatures.City"),

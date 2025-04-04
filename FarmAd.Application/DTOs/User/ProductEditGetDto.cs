@@ -11,6 +11,6 @@ namespace FarmAd.Application.DTOs.User
         public List<City> Cities { get; set; }
         public IEnumerable<SubCategory> SubCategories { get; set; }
         public IEnumerable<Category> Categories { get; set; }
-        public ProductEditDto ProductEditDto { get; set; }
+        public AdminProductEditPostDto ProductEditDto { get; set; }
     }
 }

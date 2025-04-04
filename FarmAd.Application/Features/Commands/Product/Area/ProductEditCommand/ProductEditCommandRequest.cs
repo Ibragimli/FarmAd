@@ -12,7 +12,7 @@ namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
 {
     public class ProductEditCommandRequest : IRequest<ProductEditCommandResponse>
     {
-        public AdminProductEditPostDto AdminProductEditPostDto { get; set; }
+        public FarmAd.Application.DTOs.Area.AdminProductEditPostDto AdminProductEditPostDto { get; set; }
 
     }
 }

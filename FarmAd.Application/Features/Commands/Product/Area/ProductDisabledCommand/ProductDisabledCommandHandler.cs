@@ -12,20 +12,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
+namespace FarmAd.Application.Features.Commands.Product.Area.ProductDisabledCommand
 {
-    public class ProductEditCommandHandler : IRequestHandler<ProductEditCommandRequest, ProductEditCommandResponse>
+    public class ProductDisabledCommandHandler : IRequestHandler<ProductDisabledCommandRequest, ProductDisabledCommandResponse>
     {
         private readonly IAdminProductEditServices _adminProductEditServices;
 
-        public ProductEditCommandHandler(IAdminProductEditServices adminProductEditServices)
+        public ProductDisabledCommandHandler(IAdminProductEditServices adminProductEditServices)
         {
             _adminProductEditServices = adminProductEditServices;
         }
-        public async Task<ProductEditCommandResponse> Handle(ProductEditCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ProductDisabledCommandResponse> Handle(ProductDisabledCommandRequest request, CancellationToken cancellationToken)
         {
-            _adminProductEditServices.CheckPostEdit(request.AdminProductEditPostDto);
-            await _adminProductEditServices.EditProduct(request.AdminProductEditPostDto);
+            await _adminProductEditServices.ProductDisabled(request.Id);
 
             return new()
             {

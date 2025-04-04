@@ -2,6 +2,7 @@
 using FarmAd.Application.Abstractions.Services.User;
 using FarmAd.Application.Abstractions.Tokens;
 using FarmAd.Application.DTOs;
+using FarmAd.Application.Features.Commands.Product.Area.ProductActiveCommand;
 using FarmAd.Domain.Entities.Identity;
 using FarmAd.Infrastructure.Service.User;
 using MediatR;
@@ -12,20 +13,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
+namespace FarmAd.Application.Features.Commands.Product.Area.AdminProductEditPostDto
 {
-    public class ProductEditCommandHandler : IRequestHandler<ProductEditCommandRequest, ProductEditCommandResponse>
+    public class AdminProductEditPostDtoHandler : IRequestHandler<ProductActiveCommandRequest, ProductActiveCommandResponse>
     {
         private readonly IAdminProductEditServices _adminProductEditServices;
 
-        public ProductEditCommandHandler(IAdminProductEditServices adminProductEditServices)
+        public AdminProductEditPostDtoHandler(IAdminProductEditServices adminProductEditServices)
         {
             _adminProductEditServices = adminProductEditServices;
         }
-        public async Task<ProductEditCommandResponse> Handle(ProductEditCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ProductActiveCommandResponse> Handle(ProductActiveCommandRequest request, CancellationToken cancellationToken)
         {
-            _adminProductEditServices.CheckPostEdit(request.AdminProductEditPostDto);
-            await _adminProductEditServices.EditProduct(request.AdminProductEditPostDto);
+            await _adminProductEditServices.ProductActive(request.Id);
 
             return new()
             {

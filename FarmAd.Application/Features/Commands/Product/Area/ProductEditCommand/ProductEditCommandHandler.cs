@@ -24,7 +24,7 @@ namespace FarmAd.Application.Features.Commands.Product.Area.ProductEditCommand
         }
         public async Task<ProductEditCommandResponse> Handle(ProductEditCommandRequest request, CancellationToken cancellationToken)
         {
-            _adminProductEditServices.CheckPostEdit(request.AdminProductEditPostDto);
+            await _adminProductEditServices.CheckPostEdit(request.AdminProductEditPostDto);
             await _adminProductEditServices.EditProduct(request.AdminProductEditPostDto);
 
             return new()
